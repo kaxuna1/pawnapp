@@ -4,7 +4,6 @@ import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.LoanPayment;
 import kotlin.jvm.Synchronized;
-import org.jetbrains.annotations.Contract;
 
 /**
  * Created by kaxa on 11/18/16.

@@ -4,8 +4,7 @@ package com.lombard.app.Repositorys.Lombard;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanPayment;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,7 +26,6 @@ public interface LoanPaymentRepo extends JpaRepository<LoanPayment,Long>{
     @Query("select lp from  LoanPayment lp join lp.loan l where l.filial = :filial")
     Page<LoanPayment> findFilialPayments(@Param("filial") Filial filial, Pageable pageable);
 
-    @NotNull
     @Query("select sum (li.sum) from LoanPayment li join li.loan l where (li.createDate between :from and :to ) and l.filial=:filial")
     float payedToday(@Param("filial") Filial filial, @Param("from") Date time, @Param("to") Date time2);
 

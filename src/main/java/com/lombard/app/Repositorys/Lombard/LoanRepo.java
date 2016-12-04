@@ -3,8 +3,6 @@ package com.lombard.app.Repositorys.Lombard;
 
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Loan;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -47,7 +45,7 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
     List<Loan> findByIsActiveAndClosedAndNextInterestCalculationDateBetween(boolean active, boolean closed, Date nextInterestCalculationDateStart, Date nextInterestCalculationDateEnd);
 
-    @NotNull
+
     @Query(value = "select l from Loan l where l.filial=:filial and (l.createDate between :fromD and :toD) order by l.createDate asc")
     List<Loan> findByCreateDateBetween(@Param("fromD") Date fromDate,
                                        @Param("toD")Date toDate,
@@ -55,13 +53,13 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
 
 
-    @NotNull
+
     @Query (value = "select * from loans where create_date>'2016-01-01 00:00:00'",nativeQuery = true)
     List<Loan> findByNumber();
 
     List<Loan> findByFilialAndIsActiveOrderByCreateDate(Filial filial, boolean active);
 
-    @NotNull
+
     @Query("select sum (l.loanSum) from Loan l where (l.createDate between :from and :to ) and l.filial=:filial")
     float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
 }
