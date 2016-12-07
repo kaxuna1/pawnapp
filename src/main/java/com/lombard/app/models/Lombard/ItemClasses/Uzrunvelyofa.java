@@ -3,6 +3,7 @@ package com.lombard.app.models.Lombard.ItemClasses;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lombard.app.models.Lombard.Dictionary.Brand;
+import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
@@ -38,7 +39,6 @@ public class Uzrunvelyofa {
 
     @Column
     private String hdd;
-
     @Column
     private String gpu;
     @Column
@@ -53,11 +53,9 @@ public class Uzrunvelyofa {
     private int type;
     @Column
     private int status;
-    @Column
-    private String sinji;
+
     @Column
     private Float mass;
-
 
 
     @ManyToOne
@@ -73,11 +71,15 @@ public class Uzrunvelyofa {
     @JoinColumn(name = "brandId")
     private Brand brand;
 
+    @ManyToOne
+    @JoinColumn(name = "sinjiId")
+    private Sinji sinji;
+
     @OneToMany(mappedBy = "uzrunvelyofa", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<UzrunvelyofaMovement> uzrunvelyofaMovements;
 
-    public Uzrunvelyofa(){
+    public Uzrunvelyofa() {
 
     }
 
@@ -196,7 +198,7 @@ public class Uzrunvelyofa {
     public void confiscate() {
         this.setStatus(UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE());
         this.uzrunvelyofaMovements.add(new UzrunvelyofaMovement("მოხდა კონფისკაცია",
-                UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE(),this));
+                UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE(), this));
     }
 
     public int getStatus() {
@@ -218,10 +220,10 @@ public class Uzrunvelyofa {
     public void free() {
         this.setStatus(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
         this.uzrunvelyofaMovements.add(new UzrunvelyofaMovement("გათავისუფლდა სესხისგან",
-                UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE(),this));
+                UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE(), this));
     }
 
-    public float getLeftToPayForLoanClose(){
+    public float getLeftToPayForLoanClose() {
         return loan.getSumForLoanClose();
     }
 
@@ -233,11 +235,11 @@ public class Uzrunvelyofa {
         this.name = name;
     }
 
-    public String getSinji() {
+    public Sinji getSinji() {
         return sinji;
     }
 
-    public void setSinji(String sinji) {
+    public void setSinji(Sinji sinji) {
         this.sinji = sinji;
     }
 

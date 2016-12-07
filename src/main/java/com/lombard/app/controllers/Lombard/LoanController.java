@@ -15,6 +15,7 @@ import com.lombard.app.models.Enum.UserType;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.JsonMessage;
 import com.lombard.app.models.Lombard.Client;
+import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
@@ -78,6 +79,8 @@ public class LoanController {
     private BrandRepo brandRepo;
     @Autowired
     private UzrunvelyofaRepo uzrunvelyofaRepo;
+    @Autowired
+    private SinjiRepo sinjiRepo;
 
     @RequestMapping("/send")
     @ResponseBody
@@ -278,7 +281,7 @@ public class LoanController {
                     goldTemp.setType(UzrunvelyofaTypes.GOLD.getCODE());
                     goldTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     goldTemp.setName(gold.get("name").getAsString());
-                    goldTemp.setSinji(gold.get("sinji").getAsString());
+                    goldTemp.setSinji(sinjiRepo.findOne(gold.get("sinji").getAsLong()));
                     goldTemp.setMass(gold.get("mass").getAsFloat());
                     goldTemp.setSum(gold.get("sum").getAsFloat());
                     goldTemp.setComment(gold.get("comment").getAsString());
