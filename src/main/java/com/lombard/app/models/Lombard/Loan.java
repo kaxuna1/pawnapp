@@ -1,6 +1,7 @@
 package com.lombard.app.models.Lombard;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lombard.app.StaticData;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Dictionary.LoanCondition;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
@@ -63,6 +64,7 @@ public class Loan {
 
     @Column
     private String number;
+
 
     @ManyToOne
     @JoinColumn(name = "filialId")
@@ -315,11 +317,12 @@ public class Loan {
         if (this.onFirstInterest)
             this.nextInterestCalculationDate = new DateTime(this.nextInterestCalculationDate).minusDays(1).toDate();
 
-        if(this.loanCondition.PercentLogical(this.isOnFirstInterest())>0)
-        this.loanInterests.add(
-                new LoanInterest(this,
-                        ((getLeftSum() / 100) * this.loanCondition.PercentLogical(this.isOnFirstInterest())),
-                        this.loanCondition.PercentLogical(isOnFirstInterest()), this.nextInterestCalculationDate));
+        if(this.loanCondition.PercentLogical(this.isOnFirstInterest())>0) {
+            LoanInterest loanInterest=                    new LoanInterest(this,
+                    ((getLeftSum() / 100) * this.loanCondition.PercentLogical(this.isOnFirstInterest())),
+                    this.loanCondition.PercentLogical(isOnFirstInterest()), this.nextInterestCalculationDate);
+            this.loanInterests.add(loanInterest);
+        }
         this.onFirstInterest = false;
 
         this.recalculateInterestPayments();
@@ -337,11 +340,10 @@ public class Loan {
         if (this.getLoanCondition().getFirstDayPercent() > 0) {
 
             float sum = ((getLeftSum() / 100) * this.loanCondition.getFirstDayPercent());
-            this.loanInterests.add(
-                    new LoanInterest(this,
-                            sum,
-                            this.loanCondition.getFirstDayPercent(), date));
-
+            LoanInterest loanInterest = new LoanInterest(this,
+                    sum,
+                    this.loanCondition.getFirstDayPercent(), date);
+            this.loanInterests.add(loanInterest);
             this.movements.add(new LoanMovement("დაეკისრა პროცენტი "
                     + sum + "ლარი"
                     , MovementTypes.LOAN_INTEREST_GENERATED.getCODE(), this));
@@ -477,6 +479,8 @@ public class Loan {
     }
 
     public boolean isOverdue() {
+
+        //TODO ახალი ლოგიკა დაგვიანებულის დასადგენად
         DateTime dateTime = new DateTime();
         DateTime dateTime1 = new DateTime();
         final boolean[] overdue = {false};

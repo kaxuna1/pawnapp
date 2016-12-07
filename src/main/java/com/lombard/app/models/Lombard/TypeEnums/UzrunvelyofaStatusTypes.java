@@ -8,7 +8,8 @@ public enum UzrunvelyofaStatusTypes {
     KONFISKIREBULI(2),
     GAYIDULI(3),
     GATAVISUFLEBULI(4),
-    GATANILI_PATRONIS_MIER(5);
+    GATANILI_PATRONIS_MIER(5),
+    GASAYIDAD_GADAGZAVNILI(6);
 
     private int CODE;
 

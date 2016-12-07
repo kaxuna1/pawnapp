@@ -1,13 +1,16 @@
 package com.lombard.app.models.Lombard;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Maps;
+import com.lombard.app.StaticData;
 import com.lombard.app.models.Filial;
+import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes;
+import org.springframework.data.jpa.repository.*;
 
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by kaxa on 11/16/16.
@@ -16,9 +19,9 @@ import java.util.List;
 @Entity
 @Table(name = "Clients", indexes = {
         @Index(name = "personalNumberIndex", columnList = "personalNumber", unique = true),
-        @Index(name = "nameIndex",columnList = "name"),
-        @Index(name = "surNameIndex",columnList = "surname"),
-        @Index(name = "filialIndex",columnList = "filialId")
+        @Index(name = "nameIndex", columnList = "name"),
+        @Index(name = "surNameIndex", columnList = "surname"),
+        @Index(name = "filialIndex", columnList = "filialId")
 })
 public class Client {
     @Id
@@ -45,6 +48,9 @@ public class Client {
     @Column
     private String number;
 
+    @Column
+    private String k;
+
     @ManyToOne
     @JoinColumn(name = "filialId")
     @JsonIgnore
@@ -52,7 +58,6 @@ public class Client {
 
     @Column
     private Date createDate;
-
 
     @Column
     private boolean isActive;
@@ -144,11 +149,29 @@ public class Client {
         this.number = number;
     }
 
+    public int getLoanNumber(){
+        return StaticData.clientsRepo.getLoansNumber(this);
+    }
+
     public Date getCreateDate() {
         return createDate;
     }
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public HashMap<Long, Loan> myMap(){
+        if(!StaticData.clientsToLoansMap.containsKey(this.id)) {
+            HashMap<Long,Loan> clientLoansHashmap=new HashMap<>();
+            this.loans.stream().forEach(loan -> clientLoansHashmap.put(loan.getId(),loan));
+            StaticData.clientsToLoansMap.put(this.id,clientLoansHashmap);
+        }
+        return StaticData.clientsToLoansMap.get(this.id);
+    }
+    public boolean isFlagged() {
+        return myMap().entrySet().stream().anyMatch(longLoanEntry -> longLoanEntry.getValue().getStatus() == LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE() ||
+                longLoanEntry.getValue().getStatus() == LoanStatusTypes.PAYMENT_LATE.getCODE());
+
     }
 }

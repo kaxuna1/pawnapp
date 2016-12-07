@@ -9,15 +9,19 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.5"
 	}
 }
 
+
+apply plugin: 'war'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 
 
-jar {
+
+war {
 	baseName = 'pawnapp'
 }
 sourceCompatibility = 1.8
@@ -53,5 +57,7 @@ dependencies {
 	compile('mysql:mysql-connector-java:5.1.36')
 	compile 'io.jmnarloch:rxjava-spring-boot-starter:1.0.0'
 	compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.8.4"
+	compile 'com.google.guava:guava:20.0'
+
 
 }

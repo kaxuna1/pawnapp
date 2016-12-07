@@ -6,7 +6,8 @@ package com.lombard.app.models.Lombard.TypeEnums;
 public enum LoanStatusTypes {
     ACTIVE(1),
     CLOSED_WITH_SUCCESS(2),
-    CLOSED_WITH_CONFISCATION(3);
+    CLOSED_WITH_CONFISCATION(3),
+    PAYMENT_LATE(4);
 
     private int CODE;
 

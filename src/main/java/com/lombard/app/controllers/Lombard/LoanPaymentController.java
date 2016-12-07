@@ -3,6 +3,7 @@ package com.lombard.app.controllers.Lombard;
 
 import com.lombard.app.Repositorys.Lombard.*;
 import com.lombard.app.Repositorys.SessionRepository;
+import com.lombard.app.StaticData;
 import com.lombard.app.models.Enum.JsonReturnCodes;
 import com.lombard.app.models.Enum.UserType;
 import com.lombard.app.models.JsonMessage;
@@ -66,6 +67,7 @@ public class LoanPaymentController {
                     loan.makePayment(sum,paymentType);
                     loanRepo.save(loan);
                 }
+                StaticData.mapLoan(loan);
                 return new JsonMessage(JsonReturnCodes.Ok.getCODE(),"ok");
             }catch (Exception e){
                 e.printStackTrace();

@@ -9,7 +9,8 @@ public enum MovementTypes {
     LOAN_PAYMENT_MADE_FULL(3),
     LOAN_PAYMENT_MADE_PERCENT(4),
     LOAN_INTEREST_GENERATED(5),
-    LOAN_CLOSED(6);
+    LOAN_CLOSED(6),
+    PAYMENT_OVERDUE(7);
 
     private int CODE;
 

@@ -22,22 +22,28 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
 
     @Query(value = "select l from Loan l join l.filial f where f=:filial " +
-            "and l.closed=:closed and l.isActive=true order by l.createDate desc")
-    Page<Loan> findMyFilialLoans(@Param("filial") Filial filial, @Param("closed") boolean closed, Pageable pageable);
+            "and l.status in (:statuses) " +
+            "and l.isActive=true " +
+            "and l.createDate between :start and :end " +
+            "order by l.createDate desc")
+    Page<Loan> findMyFilialLoans(@Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
+                                 @Param("start") Date start,@Param("end") Date end, Pageable pageable);
 
     @Query(value = "select l from Loan l " +
             "join l.filial f " +
             "join l.client c " +
             "join l.uzrunvelyofas u " +
             "where f=:filial " +
+            "and (l.createDate between :start and :end)" +
             "and l.isActive=true " +
-            "and l.closed=:closed " +
+            "and (l.status in (:statuses)) " +
             "and ( l.number  LIKE CONCAT('%',:search,'%') " +
             "or c.personalNumber LIKE CONCAT('%',:search,'%') " +
             "or u in (select u from u where u.number like CONCAT('%',:search,'%') )) " +
             "order by l.createDate desc")
     Page<Loan> findMyFilialLoansWithSearch(@Param("search") String search,
-                                           @Param("filial") Filial filial, @Param("closed") boolean closed, Pageable pageable);
+                                           @Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
+                                           @Param("start") Date start,@Param("end") Date end, Pageable pageable);
 
 
     @Query(value = "select l from Loan l join l.client c where c.id=:id order by l.createDate desc")
@@ -62,4 +68,20 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
     @Query("select sum (l.loanSum) from Loan l where (l.createDate between :from and :to ) and l.filial=:filial")
     float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
+
+    @Query("select l from Loan l " +
+            "join l.loanInterests p " +
+            "where " +
+            "p in (select p from p where p.dueDate<:date) and " +
+            "l.status = 1")
+    List<Loan> findOverdue(@Param("date") Date date);
+
+    @Query("select distinct l from Loan l join l.loanInterests i where " +
+            "l.filial=:filial and " +
+            "l.isActive=true  and " +
+            "l.status in :statuses and " +
+            "i in (select i from i where i.payed=false and (i.dueDate between :fromD and :toD))")
+    List<Loan> findTodayPay( @Param("fromD") Date from,@Param("toD")  Date to,
+                             @Param("filial")Filial filial,
+                             @Param("statuses") List<Integer> statuses);
 }

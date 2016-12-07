@@ -14,6 +14,7 @@ import com.lombard.app.models.Enum.ReportType
 import com.lombard.app.models.JsonMessage
 import com.lombard.app.models.Lombard.Dictionary.Brand
 import com.lombard.app.models.Lombard.Loan
+import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes
 import com.lombard.app.scheduledtasks.ScheduledTasks
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
@@ -45,6 +46,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         val loan = loanRepo.findOne(id)
         loan.addInterest()
         loanRepo.save(loan)
+        StaticData.mapLoan(loan)
         return JsonMessage(JsonReturnCodes.Ok.code, "ok")
     }
 
@@ -67,6 +69,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         var fromDate: Date = Date();
         val cal: Calendar = Calendar.getInstance() // locale-specific
         cal.time = Date()
+
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
         cal.set(Calendar.SECOND, 0)
@@ -102,17 +105,18 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                         for (dayItem in monthItem.value) {
                             for (loan in dayItem.value) {
                                 val calLoanDate: Calendar = Calendar.getInstance()
-                                calLoanDate.time = loan.createDate
-                                calLoanDate.set(Calendar.HOUR_OF_DAY, 0)
-                                calLoanDate.set(Calendar.MINUTE, 0)
-                                calLoanDate.set(Calendar.SECOND, 0)
-                                calLoanDate.set(Calendar.MILLISECOND, 0)
+
+                                calLoanDate.time = loan.value.createDate
+                                calLoanDate.set(Calendar.HOUR_OF_DAY, 1)
+                                calLoanDate.set(Calendar.MINUTE, 1)
+                                calLoanDate.set(Calendar.SECOND, 1)
+                                calLoanDate.set(Calendar.MILLISECOND, 1)
                                 val timeLong: Long = calLoanDate.time.time;
                                 if (valMap.containsKey(timeLong)) {
-                                    val newVal: Float = (valMap.get(timeLong) as Float) + loan.loanSum
+                                    val newVal: Float = (valMap.get(timeLong) as Float) + loan.value.loanSum
                                     valMap.put(timeLong, newVal)
                                 } else {
-                                    valMap.put(timeLong, loan.loanSum)
+                                    valMap.put(timeLong, loan.value.loanSum)
                                 }
                             }
                         }
@@ -153,17 +157,18 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                         for (dayItem in monthItem.value) {
                             for (payment in dayItem.value) {
                                 val calLoanDate: Calendar = Calendar.getInstance()
-                                calLoanDate.time = payment.createDate
-                                calLoanDate.set(Calendar.HOUR_OF_DAY, 0)
-                                calLoanDate.set(Calendar.MINUTE, 0)
-                                calLoanDate.set(Calendar.SECOND, 0)
-                                calLoanDate.set(Calendar.MILLISECOND, 0)
+
+                                calLoanDate.time = payment.value.createDate
+                                calLoanDate.set(Calendar.HOUR_OF_DAY, 1)
+                                calLoanDate.set(Calendar.MINUTE, 1)
+                                calLoanDate.set(Calendar.SECOND, 1)
+                                calLoanDate.set(Calendar.MILLISECOND, 1)
                                 val timeLong: Long = calLoanDate.time.time;
                                 if (valMap.containsKey(timeLong)) {
-                                    val newVal: Float = (valMap.get(timeLong) as Float) + payment.sum
+                                    val newVal: Float = (valMap.get(timeLong) as Float) + payment.value.sum
                                     valMap.put(timeLong, newVal)
                                 } else {
-                                    valMap.put(timeLong, payment.sum)
+                                    valMap.put(timeLong, payment.value.sum)
                                 }
                             }
                         }
@@ -176,17 +181,18 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                         for (dayItem in monthItem.value) {
                             for (interest in dayItem.value) {
                                 val calLoanDate: Calendar = Calendar.getInstance()
-                                calLoanDate.time = interest.createDate
-                                calLoanDate.set(Calendar.HOUR_OF_DAY, 0)
-                                calLoanDate.set(Calendar.MINUTE, 0)
-                                calLoanDate.set(Calendar.SECOND, 0)
-                                calLoanDate.set(Calendar.MILLISECOND, 0)
+
+                                calLoanDate.time = interest.value.createDate
+                                calLoanDate.set(Calendar.HOUR_OF_DAY, 1)
+                                calLoanDate.set(Calendar.MINUTE, 1)
+                                calLoanDate.set(Calendar.SECOND, 1)
+                                calLoanDate.set(Calendar.MILLISECOND, 1)
                                 val timeLong: Long = calLoanDate.time.time;
                                 if (valMap.containsKey(timeLong)) {
-                                    val newVal: Float = (valMap.get(timeLong) as Float) + interest.sum
+                                    val newVal: Float = (valMap.get(timeLong) as Float) + interest.value.sum
                                     valMap.put(timeLong, newVal)
                                 } else {
-                                    valMap.put(timeLong, interest.sum)
+                                    valMap.put(timeLong, interest.value.sum)
                                 }
                             }
                         }
@@ -218,6 +224,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
     fun getTodayData(@CookieValue("projectSessionId") sessionId: Long): Any {
         val session = sessionRepo.findOne(sessionId);
         val cal: Calendar = Calendar.getInstance() // locale-specific
+
         cal.time = Date()
         cal.set(Calendar.HOUR_OF_DAY, 0)
         cal.set(Calendar.MINUTE, 0)
@@ -229,5 +236,21 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                 "interestsMade" to interestsRepo.interestsTodayMade(session.user.filial,from,to),
                 "interestsPay" to interestsRepo.interestsTodayPay(session.user.filial,from,to),
                 "payments" to paymentRepo.payedToday(session.user.filial,from,to))
+    }
+
+    @GetMapping("/getTodayPayLoans")
+    fun getTodayPayLoans(@CookieValue("projectSessionId") sessionId: Long): Any{
+        val session = sessionRepo.findOne(sessionId);
+        val cal: Calendar = Calendar.getInstance() // locale-specific
+        cal.time = Date()
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        val from = cal.time
+        val to = DateTime(from).plusDays(1).toDate()
+        val statuses=ArrayList<Int>()
+        statuses.add(LoanStatusTypes.ACTIVE.code)
+        statuses.add(LoanStatusTypes.PAYMENT_LATE.code)
+        return loanRepo.findTodayPay(from,to,session.user.filial,statuses);
     }
 }
