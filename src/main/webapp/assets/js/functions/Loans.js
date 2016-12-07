@@ -119,7 +119,7 @@ function loadLoansData(index, search, noAnimation) {
             });
 
             $("#addNewButton").click(function () {
-                sendLoanData = {mobiles: [], laptops: []};
+                sendLoanData = {mobiles: [], laptops: [],gold:[],other:[],homeTech:[]};
                 var modal7 = $("#myModal7");
                 var tab7_1 = $("#tab7_1");
                 var tab7_2 = $("#tab7_2");
