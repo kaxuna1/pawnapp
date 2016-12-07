@@ -6,7 +6,8 @@ package com.lombard.app.models.Lombard.TypeEnums;
 public enum  UzrunvelyofaBrandType {
     MOBILE(1),
     LAPTOP(2),
-    BOTH(3);
+    BOTH(3),
+    HOMETECH(4);
 
     private int CODE;
 

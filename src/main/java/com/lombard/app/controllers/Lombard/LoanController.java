@@ -228,6 +228,9 @@ public class LoanController {
 
                 JsonArray mobiles = mainObject.getAsJsonArray("mobiles");
                 JsonArray laptopsJson = mainObject.getAsJsonArray("laptops");
+                JsonArray goldJson = mainObject.getAsJsonArray("gold");
+                JsonArray homeTechJson = mainObject.getAsJsonArray("homeTech");
+                JsonArray otherJson = mainObject.getAsJsonArray("other");
 
                 long conditionId = mainObject.get("condition").getAsLong();
                 long clientId = clientObject.get("id").getAsLong();
@@ -266,6 +269,49 @@ public class LoanController {
                     laptopTemp.setComment(laptop.get("comment").getAsString());
                     loanSum += laptop.get("sum").getAsFloat();
                     uzrunvelyofas.add(laptopTemp);
+                }
+                for (int i = 0; i < goldJson.size(); i++) {
+                    JsonObject gold = goldJson.get(i).getAsJsonObject();
+                    Uzrunvelyofa goldTemp = new Uzrunvelyofa();
+                    goldTemp.setUzrunvelyofaMovements(new ArrayList<>());
+                    goldTemp.setActive(true);
+                    goldTemp.setType(UzrunvelyofaTypes.GOLD.getCODE());
+                    goldTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+                    goldTemp.setName(gold.get("name").getAsString());
+                    goldTemp.setSinji(gold.get("sinji").getAsString());
+                    goldTemp.setMass(gold.get("mass").getAsFloat());
+                    goldTemp.setSum(gold.get("sum").getAsFloat());
+                    goldTemp.setComment(gold.get("comment").getAsString());
+                    loanSum += gold.get("sum").getAsFloat();
+                    uzrunvelyofas.add(goldTemp);
+                }
+                for (int i = 0; i < otherJson.size(); i++) {
+                    JsonObject other = otherJson.get(i).getAsJsonObject();
+                    Uzrunvelyofa otherTemp = new Uzrunvelyofa();
+                    otherTemp.setUzrunvelyofaMovements(new ArrayList<>());
+                    otherTemp.setActive(true);
+                    otherTemp.setBrand(brandRepo.findOne(other.get("brand").getAsLong()));
+                    otherTemp.setModel(other.get("model").getAsString());
+                    otherTemp.setType(UzrunvelyofaTypes.OTHER.getCODE());
+                    otherTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+                    otherTemp.setSum(other.get("sum").getAsFloat());
+                    otherTemp.setComment(other.get("comment").getAsString());
+                    loanSum += other.get("sum").getAsFloat();
+                    uzrunvelyofas.add(otherTemp);
+                }
+                for (int i = 0; i < homeTechJson.size(); i++) {
+                    JsonObject other = homeTechJson.get(i).getAsJsonObject();
+                    Uzrunvelyofa homeTechTemp = new Uzrunvelyofa();
+                    homeTechTemp.setUzrunvelyofaMovements(new ArrayList<>());
+                    homeTechTemp.setActive(true);
+                    homeTechTemp.setBrand(brandRepo.findOne(other.get("brand").getAsLong()));
+                    homeTechTemp.setModel(other.get("model").getAsString());
+                    homeTechTemp.setType(UzrunvelyofaTypes.HOMETECH.getCODE());
+                    homeTechTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+                    homeTechTemp.setSum(other.get("sum").getAsFloat());
+                    homeTechTemp.setComment(other.get("comment").getAsString());
+                    loanSum += other.get("sum").getAsFloat();
+                    uzrunvelyofas.add(homeTechTemp);
                 }
 
 

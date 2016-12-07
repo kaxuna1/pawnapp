@@ -53,6 +53,10 @@ public class Uzrunvelyofa {
     private int type;
     @Column
     private int status;
+    @Column
+    private String sinji;
+    @Column
+    private Float mass;
 
 
 
@@ -227,5 +231,21 @@ public class Uzrunvelyofa {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSinji() {
+        return sinji;
+    }
+
+    public void setSinji(String sinji) {
+        this.sinji = sinji;
+    }
+
+    public Float getMass() {
+        return mass;
+    }
+
+    public void setMass(Float mass) {
+        this.mass = mass;
     }
 }

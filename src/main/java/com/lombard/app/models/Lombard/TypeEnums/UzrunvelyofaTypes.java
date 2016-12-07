@@ -6,7 +6,9 @@ package com.lombard.app.models.Lombard.TypeEnums;
 public enum  UzrunvelyofaTypes {
     MOBILE(1),
     LAPTOP(2),
-    GOLD(3);
+    GOLD(3),
+    HOMETECH(4),
+    OTHER(5);
 
     private int CODE;
 
