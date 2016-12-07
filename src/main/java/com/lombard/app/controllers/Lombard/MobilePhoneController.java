@@ -7,6 +7,7 @@ import com.lombard.app.models.Enum.JsonReturnCodes;
 import com.lombard.app.models.Enum.UserType;
 import com.lombard.app.models.JsonMessage;
 import com.lombard.app.models.Lombard.Dictionary.Brand;
+import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.ItemClasses.MobilePhone;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
@@ -41,6 +42,8 @@ public class MobilePhoneController {
     private BrandRepo brandRepo;
     @Autowired
     private UzrunvelyofaRepo uzrunvelyofaRepo;
+    @Autowired
+    private SinjiRepo sinjiRepo;
     @ResponseBody
     @RequestMapping("/createMobilePhone")
     public JsonMessage create(@CookieValue("projectSessionId") long sessionId,
@@ -84,6 +87,11 @@ public class MobilePhoneController {
     public List<Brand> getBrands(@CookieValue("projectSessionId") long sessionId,
                                  @PathVariable("type")int type){
         return brandRepo.findByTypeOrType(type,3);
+    }
+    @RequestMapping("/getSinjebi")
+    @ResponseBody
+    public List<Sinji> getSinjebi(){
+        return sinjiRepo.findAll();
     }
     private Pageable constructPageSpecification(int pageIndex) {
         Pageable pageSpecification = new PageRequest(pageIndex, 30);

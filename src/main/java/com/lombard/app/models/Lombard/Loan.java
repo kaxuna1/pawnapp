@@ -302,7 +302,20 @@ public class Loan {
             //loanInterest.setPayedSum(loanInterest.getSum()-leftToPayForThisInterest[0]);
             loanInterest.checkIfIsPayed();
         });
+
+        this.checkStatus();
         this.tryClosingLoan();
+    }
+
+    private void checkStatus() {
+        if(this.getNextPaymentDate()==null||this.getNextPaymentDate().after(new Date())){
+            this.setStatus(LoanStatusTypes.ACTIVE.getCODE());
+            return;
+        }
+        if(this.getNextPaymentDate().before(new Date())){
+            this.setStatus(LoanStatusTypes.PAYMENT_LATE.getCODE());
+            return;
+        }
     }
 
     public void addInterest() {

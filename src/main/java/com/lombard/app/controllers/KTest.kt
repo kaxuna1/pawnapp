@@ -231,6 +231,9 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         cal.set(Calendar.SECOND, 0)
         val from = cal.time
         val to = DateTime(from).plusDays(1).toDate();
+
+        
+
         return mapOf(
                 "loans" to loanRepo.loansToday(session.user.filial, from, to),
                 "interestsMade" to interestsRepo.interestsTodayMade(session.user.filial,from,to),
