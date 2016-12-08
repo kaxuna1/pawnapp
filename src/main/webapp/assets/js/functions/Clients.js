@@ -127,7 +127,8 @@ openUserGlobal = function (currentElement) {
         var loansDiv=$("#tab5_1");
         var graphsDiv=$("#tab5_2");
         var paymentsDiv=$("#tab5_3");
-        var actionsDiv=$("#tab6_1")
+        var actionsDiv=$("#tab6_1");
+        var infoDiv=$("#tab6_2");
         loansDiv.append('<div class="row">' +
             '<div class="col-md-3">' +
             '<label>' +
@@ -151,10 +152,12 @@ openUserGlobal = function (currentElement) {
             loansDataTableBody:loansDataTableBody,
             clPagination:clPagination,
             modal:modal,
-            actionsDiv:actionsDiv
+            actionsDiv:actionsDiv,
+            infoDiv:infoDiv
         };
         loadClientLoansToDiv(DOMElements,currentElement.id,0);
         initClientActionsButtons(DOMElements,currentElement);
+        initClientInfo(DOMElements,currentElement);
         head.html("");
         $('input').iCheck({
             checkboxClass: 'icheckbox_minimal',
@@ -167,6 +170,28 @@ openUserGlobal = function (currentElement) {
 
     }, 1024)
 };
+function initClientInfo(DOMElements,currentElement){
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>სახელი:</div> "+
+        "<div class='col-md-4'>"+
+        currentElement.name+
+        "</div>"+
+        "</div>")
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>გვარი: </div>"+
+        "<div class='col-md-4'>"+currentElement.surname+
+
+        "</div>"+
+        "</div>")
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პ/ნ: </div>"+
+        "<div class='col-md-4'>"+
+        currentElement.personalNumber+
+        "</div>"+
+        "</div>")
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>მობილური: </div>" +
+        "<div class='col-md-4'>"+
+        currentElement.mobile+"" +
+        "</div>"+
+        "</div>")
+}
 function initClientActionsButtons(DOMElements2,currentElement){
     DOMElements2.actionsDiv.append('<div style=" text-align: center;" class="row">' +
         '<button id="newLoanBtn" style="width: 80%" type="button" class="btn btn-primary btn-rounded">სესხის გაცემა</button></div>')
