@@ -7,6 +7,7 @@ import com.lombard.app.StaticData;
 import com.lombard.app.models.Enum.JsonReturnCodes;
 import com.lombard.app.models.Enum.UserType;
 import com.lombard.app.models.JsonMessage;
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanPayment;
 import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
@@ -59,10 +60,11 @@ public class LoanPaymentController {
                 if(paymentType== LoanPaymentType.FULL.getCODE()){
                     loan.makePaymentForClosing(sum);
                     loan=loanRepo.save(loan);
-                    loan.getUzrunvelyofas().forEach(uzrunvelyofa -> {
-                        uzrunvelyofa.free();
-                        uzrunvelyofaRepo.save(uzrunvelyofa);
-                    });
+                    for (Uzrunvelyofa u:
+                         loan.getUzrunvelyofas()) {
+                        u.free();
+                        uzrunvelyofaRepo.save(u);
+                    }
                 }else{
                     loan.makePayment(sum,paymentType);
                     loanRepo.save(loan);

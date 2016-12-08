@@ -1,9 +1,6 @@
 package com.lombard.app.controllers
 
-import com.lombard.app.Repositorys.Lombard.BrandRepo
-import com.lombard.app.Repositorys.Lombard.LoanInterestRepo
-import com.lombard.app.Repositorys.Lombard.LoanPaymentRepo
-import com.lombard.app.Repositorys.Lombard.LoanRepo
+import com.lombard.app.Repositorys.Lombard.*
 import com.lombard.app.Repositorys.SessionRepository
 import com.lombard.app.Repositorys.UserRepository
 import com.lombard.app.StaticData
@@ -18,6 +15,8 @@ import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes
 import com.lombard.app.scheduledtasks.ScheduledTasks
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import java.text.SimpleDateFormat
@@ -35,7 +34,8 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                            val userRepository: UserRepository,
                            val sessionRepo: SessionRepository,
                            val interestsRepo: LoanInterestRepo,
-                           val paymentRepo: LoanPaymentRepo) {
+                           val paymentRepo: LoanPaymentRepo,
+                           val uzrunvelyofaRepo: UzrunvelyofaRepo) {
 
     private val log = LoggerFactory.getLogger(LoanControllerKotlin::class.java)
 
@@ -122,11 +122,6 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                         }
                     }
                 }
-
-
-
-
-
 
 
                 /*
@@ -232,17 +227,17 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         val from = cal.time
         val to = DateTime(from).plusDays(1).toDate();
 
-        
+
 
         return mapOf(
                 "loans" to loanRepo.loansToday(session.user.filial, from, to),
-                "interestsMade" to interestsRepo.interestsTodayMade(session.user.filial,from,to),
-                "interestsPay" to interestsRepo.interestsTodayPay(session.user.filial,from,to),
-                "payments" to paymentRepo.payedToday(session.user.filial,from,to))
+                "interestsMade" to interestsRepo.interestsTodayMade(session.user.filial, from, to),
+                "interestsPay" to interestsRepo.interestsTodayPay(session.user.filial, from, to),
+                "payments" to paymentRepo.payedToday(session.user.filial, from, to))
     }
 
     @GetMapping("/getTodayPayLoans")
-    fun getTodayPayLoans(@CookieValue("projectSessionId") sessionId: Long): Any{
+    fun getTodayPayLoans(@CookieValue("projectSessionId") sessionId: Long): Any {
         val session = sessionRepo.findOne(sessionId);
         val cal: Calendar = Calendar.getInstance() // locale-specific
         cal.time = Date()
@@ -251,14 +246,31 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         cal.set(Calendar.SECOND, 0)
         val from = cal.time
         val to = DateTime(from).plusDays(1).toDate()
-        val statuses=ArrayList<Int>()
+        val statuses = ArrayList<Int>()
         statuses.add(LoanStatusTypes.ACTIVE.code)
         statuses.add(LoanStatusTypes.PAYMENT_LATE.code)
-        return loanRepo.findTodayPay(from,to,session.user.filial,statuses);
+        return loanRepo.findTodayPay(from, to, session.user.filial, statuses);
     }
+
     @GetMapping("/tt")
-    fun tt(@CookieValue("projectSessionId") sessionId: Long):Any{
+    fun tt(@CookieValue("projectSessionId") sessionId: Long): Any {
         val session = sessionRepo.findOne(sessionId);
-        return StaticData.getLoansByMonthFromHash(Date(),session.user.filial);
+        return StaticData.getLoansByMonthFromHash(Date(), session.user.filial);
+    }
+
+    @GetMapping("/getClientUzrunvelyofa/{id}/{page}")
+    fun getClientUzrunvelyofa(@PathVariable("id") id: Long,
+                              @PathVariable("page") page: Int,
+                              @CookieValue("projectSessionId") sessionId: Long): Any? {
+        val session = sessionRepo.findOne(sessionId)
+        val client = clientsRepo.findOne(id)
+        if (session.user.filial.id == client.filial.id)
+            return uzrunvelyofaRepo.findClientsUzrunvelyofa(client, constructPageSpecification(pageIndex = page, size = 10))
+        else
+            return null
+    }
+
+    private fun constructPageSpecification(pageIndex: Int, size: Int): Pageable {
+        return PageRequest(pageIndex, size)
     }
 }

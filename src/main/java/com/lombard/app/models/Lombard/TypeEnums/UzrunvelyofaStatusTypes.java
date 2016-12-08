@@ -5,7 +5,7 @@ package com.lombard.app.models.Lombard.TypeEnums;
  */
 public enum UzrunvelyofaStatusTypes {
     DATVIRTULI(1),
-    KONFISKIREBULI(2),
+    DAKAVEBULI(2),
     GAYIDULI(3),
     GATAVISUFLEBULI(4),
     GATANILI_PATRONIS_MIER(5),

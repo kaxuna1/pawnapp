@@ -196,9 +196,9 @@ public class Uzrunvelyofa {
     }
 
     public void confiscate() {
-        this.setStatus(UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE());
+        this.setStatus(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
         this.uzrunvelyofaMovements.add(new UzrunvelyofaMovement("მოხდა კონფისკაცია",
-                UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE(), this));
+                UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(), this));
     }
 
     public int getStatus() {

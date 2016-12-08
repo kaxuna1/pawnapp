@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -106,7 +105,7 @@ public class MobilePhoneController {
     public Page<Uzrunvelyofa> getConfiscated(@CookieValue("projectSessionId") long sessionId,
                                              @RequestParam(value = "index", required = true, defaultValue = "0") int index,
                                              @RequestParam(value = "search", required = true, defaultValue = "") String search){
-        return uzrunvelyofaRepo.findForFilial(search, UzrunvelyofaStatusTypes.KONFISKIREBULI.getCODE(),sessionRepository.findOne(sessionId).getUser().getFilial(),constructPageSpecification(index));
+        return uzrunvelyofaRepo.findForFilial(search, UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(),sessionRepository.findOne(sessionId).getUser().getFilial(),constructPageSpecification(index));
     }
 
 
