@@ -17,6 +17,7 @@ public interface LoanInterestRepo extends JpaRepository<LoanInterest,Long> {
     float interestsTodayMade(@Param("filial") Filial filial, @Param("from") Date time, @Param("to") Date time2);
 
 
-    @Query("select sum (li.sum) from LoanInterest li join li.loan l where (li.dueDate between :from and :to ) and l.filial=:filial")
-    float interestsTodayPay(@Param("filial") Filial filial, @Param("from") Date time, @Param("to") Date time2);
+    @Query("select sum (li.sum) from LoanInterest li join li.loan l where " +
+            "(li.dueDate between :fromD and :toD ) and l.filial=:filial and l.isActive=true")
+    float interestsTodayPay(@Param("filial") Filial filial, @Param("fromD") Date time, @Param("toD") Date time2);
 }

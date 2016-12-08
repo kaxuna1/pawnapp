@@ -5,6 +5,7 @@ import com.lombard.app.Repositorys.FilialRepository;
 import com.lombard.app.Repositorys.Lombard.ClientsRepo;
 import com.lombard.app.Repositorys.Lombard.LoanRepo;
 import com.lombard.app.StaticData;
+import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.LoanPayment;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.management.MemoryUsage;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static com.lombard.app.StaticData.*;
 
@@ -68,7 +70,7 @@ public class ScheduledTasks {
         if (runOnce) {
             StaticData.clientsRepo=this.clientsRepo;
             runOnce = false;
-            filialRepository.findAll()
+            filialRepository.findAll().stream().filter(Filial::isActive)
                     .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
                             .stream().forEach(StaticData::mapLoan));
             log.info("initFinish");

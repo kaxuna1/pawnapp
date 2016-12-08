@@ -44,6 +44,9 @@ public class Filial {
     @OneToMany(mappedBy = "filial",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<Client> clients;
 
+    @Column
+    private boolean active;
+
     @JsonIgnore
     @OneToMany(mappedBy = "filial",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<LoanCondition> loanConditions;
@@ -56,6 +59,7 @@ public class Filial {
         this.loans=new ArrayList<>();
         this.clients=new ArrayList<>();
         this.loanConditions=new ArrayList<>();
+        this.active=true;
     }
     public Filial(){}
 
@@ -113,5 +117,13 @@ public class Filial {
 
     public void setLoanConditions(List<LoanCondition> loanConditions) {
         this.loanConditions = loanConditions;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

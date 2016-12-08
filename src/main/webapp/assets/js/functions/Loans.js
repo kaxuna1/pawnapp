@@ -9,6 +9,7 @@ var sendLoanData = {};
 var brands = {};
 var laptopBrands = {};
 var sinjebi = {};
+var homeTechBrands = {};
 var conditions = {};
 var indexG = 0;
 var searchG = "";
@@ -75,6 +76,7 @@ function loadLoansData(index, search, noAnimation) {
                 console.log(currentElement["createDate"])
                 $("#dataGridBody").append("<tr class='" + (currentElement.status === 4 ? "danger" : "") + "'>" +
                     "<td><input value='" + currentElement["id"] + "' class='checkboxParcel' type='checkbox' /></td>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRow'>"  + itemLogos + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" + '<i class="fa fa-balance-scale" aria-hidden="true"></i> ' + currentElement["number"] + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" + '<i class="fa fa-user-circle-o" aria-hidden="true"></i> ' + currentElement["clientFullName"] + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'><img style='height: 15px;padding-bottom: 4px;;' src='assets/images/lari.png'>" + currentElement["loanSum"] + "</td>" +
@@ -309,6 +311,50 @@ function drawLoanInfoAdder(DOMElements) {
                 DOMElements.uzrunvelyofaFormPlace.slideUp("slow")
             });
         });
+    var crateHomeTechButton = createButtonWithHandlerr(DOMElements.uzrunvelyofaInputPlace,
+        '<i class="fa fa-cart-plus" aria-hidden="true"></i> საყოფაცხოვრებო', function () {
+            loanConditionChooserButton.enabled(false);
+            createUzrunvelyofaButton.enabled(false);
+            DOMElements.uzrunvelyofaInputPlace.slideUp("slow");
+            laptopBrands = {};
+            dynamicCreateToArray(DOMElements.uzrunvelyofaFormPlace, sendLoanData.homeTech, {
+
+                brand: {
+                    name: "ბრენდი",
+                    type: "comboBox",
+                    valueField: "id",
+                    nameField: "name",
+                    url: "/getbrands/4",
+                    IdToNameMap: homeTechBrands
+                },
+                model: {
+                    name: "მოდელი",
+                    type: "text"
+                },
+                name: {
+                    name: "დასახელება",
+                    type: "text"
+                },
+                sum: {
+                    name: "შეფასება",
+                    type: "number"
+                },
+                comment: {
+                    name: "კომენტარი",
+                    type: "text"
+                }
+            }, function () {
+                loanConditionChooserButton.enabled(true);
+                createUzrunvelyofaButton.enabled(true);
+                drawUzrunvelyofaGrid(DOMElements);
+                updateSideInfo(DOMElements);
+                DOMElements.uzrunvelyofaInputPlace.slideDown("slow");
+            }, function () {
+                DOMElements.uzrunvelyofaFormPlace.slideDown("slow")
+            }, function () {
+                DOMElements.uzrunvelyofaFormPlace.slideUp("slow")
+            });
+        });
     var createGoldButton = createButtonWithHandlerr(DOMElements.uzrunvelyofaInputPlace,
         '<i class="fa fa-cart-plus" aria-hidden="true"></i> ოქრო', function () {
             loanConditionChooserButton.enabled(false);
@@ -388,6 +434,7 @@ function drawUzrunvelyofaGrid(DOMElements) {
     var data = sendLoanData.mobiles;
     var lapData = sendLoanData.laptops;
     var goldData = sendLoanData.gold;
+    var homeTechData = sendLoanData.homeTech;
     console.log(brands);
     for (var key in data) {
         var element = data[key];
@@ -421,15 +468,14 @@ function drawUzrunvelyofaGrid(DOMElements) {
             '</div>'
         );
     }
-    for (var key in goldData) {
-        var element = goldData[key];
-        var statusString = '<span class="label label-danger">წონა: ' + element.mass + '</span>' +
-            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
+    for (var key in homeTechData) {
+        var element = homeTechData[key];
+        var statusString = '<span class="label label-danger">' + element.sum + ' ლარი</span>';
         DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
             '<div class="media">' +
             '   <div class="media-body">' +
-            '   <div style="width: 22%;margin-left: 17px;" class="sender">სინჯი ' + sinjebi[element.sinji] + " " + element.name + '</div>' +
-            '<div style="width: 70%;" class="subject">' + statusString + '<span type="gold" value="' + key + '" class="remove-uzrunvelyofa label label-danger">X</span></div>' +
+            '   <div style="width: 22%;margin-left: 17px;" class="sender">'+element.name+' ' + homeTechBrands[element.brand] + " " + element.model + '</div>' +
+            '<div style="width: 70%;" class="subject">' + statusString + '<span type="homeTech" value="' + key + '" class="remove-uzrunvelyofa label label-danger">X</span></div>' +
             '</div>' +
             '</div>' +
             '</div>'
@@ -444,6 +490,8 @@ function drawUzrunvelyofaGrid(DOMElements) {
             delete lapData[key];
         if(type==="gold")
             delete goldData[key];
+        if(type==="homeTech")
+            delete homeTechData[key];
         updateSideInfo(DOMElements);
         drawUzrunvelyofaGrid(DOMElements);
     })
@@ -458,6 +506,7 @@ function updateSideInfo(DOMElements) {
     var mobile = true;
     var laptop = true;
     var gold = true;
+    var homeTech = true;
     var sum = 0;
     if (sendLoanData.client) {
         DOMElements.loanDataBodyDiv.append("<div>კლიენტი: <strong style='font-family: font1'>" + sendLoanData.client.name + " " + sendLoanData.client.surname + "</strong> </div>");
@@ -504,12 +553,25 @@ function updateSideInfo(DOMElements) {
     } else {
         gold = false;
     }
+    if (sendLoanData.homeTech.length > 0) {
+        DOMElements.loanDataBodyDiv.append("<div>საოჯახო ტექნიკა: </div>");
+        for (var gKey in sendLoanData.homeTech) {
+            var homeTechObj = sendLoanData.homeTech[gKey];
+            sum += parseFloat(homeTechObj.sum);
+            DOMElements.loanDataBodyDiv.append("<div><strong style='font-family: font1'> სინჯი: "
+                + homeTechBrands[homeTechObj.brand] + " " + homeTechObj.name + " " + homeTechObj.sum
+                + " ლარი</strong></div>");
+        }
+
+    } else {
+        homeTech = false;
+    }
     if (sum > 0) {
         DOMElements.loanDataBodyDiv.append("<div>ჯამური თანხა: <strong style='font-family: font1'>" + parseFloat(sum) + " ლარი</strong></div>");
     }
 
 
-    if (enabled && (mobile || laptop || gold)) {
+    if (enabled && (mobile || laptop || gold || homeTech)) {
         var createLoanButton = createButtonWithHandlerr(DOMElements.loanActionsDiv, "დადასტურება", function () {
             console.log(sendLoanData);
             $.ajax({
@@ -642,7 +704,6 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
             '</div>'
         );
     }
-
     var dataGold = DOMElements.currentObj.uzrunvelyofa;
     for (var key in dataGold) {
         var element = dataGold[key];
@@ -654,6 +715,23 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
             '<div class="media">' +
             '   <div class="media-body">' +
             '   <div style="width: 42%;margin-left: 17px;" class="sender">' + element.sinji.name + " " + element.name + '</div>' +
+            '<div style="width: 50%;" class="subject">' + statusString + '</div>' +
+            '</div>' +
+            '</div>' +
+            '</div>'
+        );
+    }
+    var dataHomeTech = DOMElements.currentObj.uzrunvelyofa;
+    for (var key in dataGold) {
+        var element = dataGold[key];
+        if (element.type !== 4)
+            continue;
+        var statusString =
+            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
+        DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
+            '<div class="media">' +
+            '   <div class="media-body">' +
+            '   <div style="width: 42%;margin-left: 17px;" class="sender">'+element.name+' ' + element.brand.name + " " + element.model + '</div>' +
             '<div style="width: 50%;" class="subject">' + statusString + '</div>' +
             '</div>' +
             '</div>' +

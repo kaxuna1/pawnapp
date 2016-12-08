@@ -26,7 +26,8 @@ public interface LoanPaymentRepo extends JpaRepository<LoanPayment,Long>{
     @Query("select lp from  LoanPayment lp join lp.loan l where l.filial = :filial")
     Page<LoanPayment> findFilialPayments(@Param("filial") Filial filial, Pageable pageable);
 
-    @Query("select sum (li.sum) from LoanPayment li join li.loan l where (li.createDate between :from and :to ) and l.filial=:filial")
+    @Query("select sum (li.sum) from LoanPayment li join li.loan l where (li.createDate between :from and :to ) " +
+            "and l.filial=:filial and l.isActive=true and li.active=true")
     float payedToday(@Param("filial") Filial filial, @Param("from") Date time, @Param("to") Date time2);
 
 }

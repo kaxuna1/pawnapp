@@ -66,14 +66,14 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
     List<Loan> findByFilialAndIsActiveOrderByCreateDate(Filial filial, boolean active);
 
 
-    @Query("select sum (l.loanSum) from Loan l where (l.createDate between :from and :to ) and l.filial=:filial")
+    @Query("select sum (l.loanSum) from Loan l where (l.createDate between :from and :to ) and l.filial=:filial and l.isActive=true")
     float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
 
     @Query("select l from Loan l " +
             "join l.loanInterests p " +
             "where " +
             "p in (select p from p where p.dueDate<:date) and " +
-            "l.status = 1")
+            "l.status = 1 and l.isActive=true")
     List<Loan> findOverdue(@Param("date") Date date);
 
     @Query("select distinct l from Loan l join l.loanInterests i where " +

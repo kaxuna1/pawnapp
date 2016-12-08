@@ -18,6 +18,8 @@ import rx.functions.Func1;
 
 import javax.persistence.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 /**
@@ -540,5 +542,9 @@ public class Loan {
 
     public void setUzrunvelyofas(List<Uzrunvelyofa> uzrunvelyofas) {
         this.uzrunvelyofas = uzrunvelyofas;
+    }
+
+    public List<Integer> getLoanUzrunvelyofaTypes(){
+        return this.uzrunvelyofas.stream().map(Uzrunvelyofa::getType).distinct().sorted().collect(Collectors.toList());
     }
 }

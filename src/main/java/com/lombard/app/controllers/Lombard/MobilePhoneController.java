@@ -86,7 +86,7 @@ public class MobilePhoneController {
     @ResponseBody
     public List<Brand> getBrands(@CookieValue("projectSessionId") long sessionId,
                                  @PathVariable("type")int type){
-        return brandRepo.findByTypeOrType(type,3);
+        return brandRepo.findByTypeOrType(type,type);
     }
     @RequestMapping("/getSinjebi")
     @ResponseBody

@@ -396,7 +396,7 @@ $(document).ready(function () {
                 radioClass: 'iradio_minimal',
                 increaseArea: '20%' // optional
             });
-            $("#lstd").val(moment(new Date()).subtract(3, 'days').locale("ka").format("YYYY-MM-DD"));
+            $("#lstd").val(moment(new Date()).subtract(365, 'days').locale("ka").format("YYYY-MM-DD"));
             $("#lend").val(moment(new Date()).locale("ka").format("YYYY-MM-DD"));
             if (datarowSlide) {
                 $("#dataRow").slideDown("slow");

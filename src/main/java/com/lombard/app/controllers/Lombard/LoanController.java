@@ -309,6 +309,7 @@ public class LoanController {
                     homeTechTemp.setActive(true);
                     homeTechTemp.setBrand(brandRepo.findOne(other.get("brand").getAsLong()));
                     homeTechTemp.setModel(other.get("model").getAsString());
+                    homeTechTemp.setName(other.get("name").getAsString());
                     homeTechTemp.setType(UzrunvelyofaTypes.HOMETECH.getCODE());
                     homeTechTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     homeTechTemp.setSum(other.get("sum").getAsFloat());
