@@ -72,7 +72,7 @@ function stockCharts(tabName, data, name) {
     // Create the chart
     $('#stock-' + tabName).highcharts('StockChart', {
         chart: {
-            height: 400,
+            height: 240,
             type: 'spline',
             borderColor: '#DE0E13'
         },
