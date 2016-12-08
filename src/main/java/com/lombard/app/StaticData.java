@@ -1,6 +1,7 @@
 package com.lombard.app;
 
 import com.lombard.app.Repositorys.Lombard.ClientsRepo;
+import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.LoanPayment;
@@ -13,8 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by kaxa on 11/24/16.
@@ -108,5 +111,40 @@ public class StaticData {
         }else{
             activeLoans.get(filialId).get(year).get(month).get(day).put(loan.getId(), loan);
         }
+    }
+
+    public static List<Loan> getLoansByMonthFromHash(Date date, Filial filial){
+        List<Loan> loans=new ArrayList<>();
+        DateTime dateTime=new DateTime(date.getTime());
+        int thisMonth=dateTime.getMonthOfYear();
+        dateTime=dateTime.withDayOfMonth(1);
+        while (dateTime.getMonthOfYear()==thisMonth){
+            loans.addAll(getloansByDayFromHash(dateTime.toDate(),filial));
+            dateTime=dateTime.plusDays(1);
+        }
+
+        return loans;
+    }
+
+    public static List<Loan> getloansByDayFromHash(Date date,Filial filial){
+        List<Loan> loans=new ArrayList<>();
+        DateTime dateTime = new DateTime(date);
+        long filialId = filial.getId();
+        int year = dateTime.getYear();
+        int month = dateTime.getMonthOfYear();
+        int day = dateTime.getDayOfMonth();
+
+        if (!activeLoans.containsKey(filialId))
+            activeLoans.put(filialId, new HashMap<>());
+        if (!activeLoans.get(filialId).containsKey(year))
+            activeLoans.get(filialId).put(year, new HashMap<>());
+        if (!activeLoans.get(filialId).get(year).containsKey(month))
+            activeLoans.get(filialId).get(year).put(month, new HashMap<>());
+        if (!activeLoans.get(filialId).get(year).get(month).containsKey(day)) {
+            HashMap<Long, Loan> list = new HashMap<>();
+            activeLoans.get(filialId).get(year).get(month).put(day, list);
+        }
+        return activeLoans.get(filialId).get(year).get(month).get(day).values().stream().collect(Collectors.toList());
+
     }
 }

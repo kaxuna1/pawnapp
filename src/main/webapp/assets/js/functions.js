@@ -6,7 +6,7 @@
 var currentFunction;
 var datarowSlide = false;
 var dashRow = false;
-
+var currentPage=1;
 $.getJSON("/getsessionstatus", function (result) {
     if (!result["isactive"]) {
         eraseCookie("projectSessionId");
@@ -331,6 +331,7 @@ $(document).ready(function () {
         });
 
         $("#loadClientsButton").click(function () {
+            currentPage=2;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
@@ -359,6 +360,7 @@ $(document).ready(function () {
         });
 
         $("#loadConfiscatedButton").click(function () {
+            currentPage=4;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
@@ -372,6 +374,7 @@ $(document).ready(function () {
         });
 
         $("#loadLoansButton").click(function () {
+            currentPage=3;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
@@ -411,6 +414,7 @@ $(document).ready(function () {
 
         });
         $("#loadConditionsButton").click(function () {
+            currentPage=5;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");

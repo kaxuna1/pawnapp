@@ -256,4 +256,9 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         statuses.add(LoanStatusTypes.PAYMENT_LATE.code)
         return loanRepo.findTodayPay(from,to,session.user.filial,statuses);
     }
+    @GetMapping("/tt")
+    fun tt(@CookieValue("projectSessionId") sessionId: Long):Any{
+        val session = sessionRepo.findOne(sessionId);
+        return StaticData.getLoansByMonthFromHash(Date(),session.user.filial);
+    }
 }

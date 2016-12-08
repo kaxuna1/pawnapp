@@ -15,7 +15,6 @@ import com.lombard.app.models.Enum.UserType;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.JsonMessage;
 import com.lombard.app.models.Lombard.Client;
-import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
@@ -157,14 +156,13 @@ public class LoanController {
                                @RequestParam(value = "end", required = true, defaultValue = "false") long end) {
 
 
-
         Session session = sessionRepository.findOne(sessionId);
         List<Integer> statuses = new ArrayList<>();
         if (!closed && !opened) {
-            if(!late){
+            if (!late) {
                 statuses.add(LoanStatusTypes.ACTIVE.getCODE());
                 statuses.add(LoanStatusTypes.CLOSED_WITH_SUCCESS.getCODE());
-            }else{
+            } else {
                 statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
                 statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
             }
@@ -194,16 +192,47 @@ public class LoanController {
             statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
         }*/
         if (!search.isEmpty())
-            return loanRepo.findMyFilialLoansWithSearch(search, session.getUser().getFilial(), statuses,new Date(start),new DateTime(new Date(end)).plusDays(1).toDate(), constructPageSpecification(index));
+            return loanRepo.findMyFilialLoansWithSearch(search, session.getUser().getFilial(), statuses, new Date(start), new DateTime(new Date(end)).plusDays(1).toDate(), constructPageSpecification(index, 30));
         else
-            return loanRepo.findMyFilialLoans(session.getUser().getFilial(), statuses,new Date(start),new DateTime(new Date(end)).plusDays(1).toDate(), constructPageSpecification(index));
+            return loanRepo.findMyFilialLoans(session.getUser().getFilial(), statuses, new Date(start), new DateTime(new Date(end)).plusDays(1).toDate(), constructPageSpecification(index, 30));
     }
 
-    @RequestMapping("/getClientloans/{id}")
+    @RequestMapping("/getClientloans/{id}/{page}")
     @ResponseBody
-    public HashMap<Long,Loan> getClientLoans(@CookieValue("projectSessionId") long sessionId, @PathVariable("id") long id) {
+    public Page<Loan> getClientLoans(@CookieValue("projectSessionId") long sessionId,
+                                     @PathVariable("id") long id,
+                                     @PathVariable("page") int page,
+                                     @RequestParam(value = "closed", required = true, defaultValue = "false") boolean closed,
+                                     @RequestParam(value = "opened", required = true, defaultValue = "false") boolean opened,
+                                     @RequestParam(value = "late", required = true, defaultValue = "false") boolean late) {
         Session session = sessionRepository.findOne(sessionId);
-        return StaticData.clientsToLoansMap.get(id);
+
+        //List<Loan> loanList=;
+        List<Integer> statuses = new ArrayList<>();
+        if (!closed && !opened) {
+            if (!late) {
+                statuses.add(LoanStatusTypes.CLOSED_WITH_SUCCESS.getCODE());
+                statuses.add(LoanStatusTypes.ACTIVE.getCODE());
+            } else {
+                statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
+                statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
+            }
+        }
+        if (opened) {
+            if (!late)
+                statuses.add(LoanStatusTypes.ACTIVE.getCODE());
+            else
+                statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
+        }
+        if (closed) {
+            if (!late)
+                statuses.add(LoanStatusTypes.CLOSED_WITH_SUCCESS.getCODE());
+            else
+                statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
+        }
+
+        return loanRepo.
+                findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc(clientsRepo.getOne(id), true,statuses, constructPageSpecification(page, 10));
     }
 
     @RequestMapping("/createloan")
@@ -467,13 +496,13 @@ public class LoanController {
 
     @RequestMapping("/rt")
     @ResponseBody
-    public HashMap<Integer, HashMap<Long,Loan>> getrt(@CookieValue("projectSessionId") long sessionId, int m) {
+    public HashMap<Integer, HashMap<Long, Loan>> getrt(@CookieValue("projectSessionId") long sessionId, int m) {
         return StaticData.activeLoans.get(sessionRepository.findOne(sessionId).getUser().getFilial().getId()).get(2016).get(3);
     }
 
 
-    private Pageable constructPageSpecification(int pageIndex) {
-        return new PageRequest(pageIndex, 30);
+    private Pageable constructPageSpecification(int pageIndex, int size) {
+        return new PageRequest(pageIndex, size);
     }
 
 }

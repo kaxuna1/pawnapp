@@ -35,12 +35,6 @@ function loadLoansData(index, search, noAnimation) {
         $("#lateParam").on('ifChanged', function () {
             loadLoansData(0, search);
         });
-
-        $("#addNewDiv").html(
-            '<button id="addNewButton" data-target="#myModal" style="font-family: font1;" class="btn btn-sm btn-dark">' +
-            '<i class="fa fa-plus" aria-hidden="true"></i>' +
-            ' ახალი სესხის გაცემა' +
-            '</button>');
         $.getJSON("getloans?index=" + index +
             "&closed=" +
             ($("#closedParam").is(":checked") ? "true" : "false") +
@@ -71,9 +65,20 @@ function loadLoansData(index, search, noAnimation) {
             var totalElements = result["totalElements"];
             for (i = 0; i < dataArray.length; i++) {
                 var currentElement = dataArray[i];
-                console.log(new Date(currentElement["createDate"]))
+                console.log(new Date(currentElement["createDate"]));
+                var itemLogos="";
+                for(typeKey in currentElement.loanUzrunvelyofaTypes){
+                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===3)
+                        itemLogos+="<img style='height: 20px' src='assets/images/gold.png' />";
+                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===1)
+                        itemLogos+="<img style='height: 20px' src='assets/images/phone.png' />";
+                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===2)
+                        itemLogos+="<img style='height: 20px' src='assets/images/lap.png' />";
+                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===4)
+                        itemLogos+="<img style='height: 20px' src='assets/images/homeTech.png' />";
+                }
+                console.log(currentElement["createDate"]);
 
-                console.log(currentElement["createDate"])
                 $("#dataGridBody").append("<tr class='" + (currentElement.status === 4 ? "danger" : "") + "'>" +
                     "<td><input value='" + currentElement["id"] + "' class='checkboxParcel' type='checkbox' /></td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>"  + itemLogos + "</td>" +
@@ -122,35 +127,7 @@ function loadLoansData(index, search, noAnimation) {
             });
 
             $("#addNewButton").click(function () {
-                sendLoanData = {mobiles: [], laptops: [], gold: [], other: [], homeTech: []};
-                var modal7 = $("#myModal7");
-                var tab7_1 = $("#tab7_1");
-                var tab7_2 = $("#tab7_2");
-                var tab7_3 = $("#tab7_3");
-                var projectName = $("#projectName2");
-                var clientChooserPlace = $("#clientChooserPlace");
-                var uzrunvelyofaInputPlace = $("#uzrunvelyofaInputPlace");
-                var loanDataBodyDiv = $("#loanDataBodyDiv");
-                var loanActionsDiv = $("#loanActionsDiv");
-                var DOMElements = {
-                    projectName: projectName,
-                    clientChooserPlace: clientChooserPlace,
-                    uzrunvelyofaInputPlace: uzrunvelyofaInputPlace,
-                    loanDataBodyDiv: loanDataBodyDiv,
-                    loanActionsDiv: loanActionsDiv,
-                    uzrunvelyofaFormPlace: $("#uzrunvelyofaFormPlace"),
-                    uzrunvelyofaGridPlace: $("#uzrunvelyofaGridPlace"),
-                    modal: modal7
-                };
-                projectName.html("ახალი სესხის გაცემა");
 
-
-                drawClientChooser(DOMElements);
-                drawLoanInfoAdder(DOMElements);
-                updateSideInfo(DOMElements)
-
-
-                modal7.modal("show");
             })
         })
     }
@@ -812,6 +789,7 @@ function loadLoanDoActions(DOMElements) {
                 }, function () {
                     modal.modal("hide");
                     $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result) {
+                        if(currentPage===3)
                         loadLoansData(indexG, searchG, true);
                         openLoanGlobal(result);
                     });
@@ -825,6 +803,7 @@ function loadLoanDoActions(DOMElements) {
         createButtonWithHandlerr(DOMElements.loanDoActionsDiv, "პროცენტის დაკისრება", function () {
             $.getJSON("/addInterestToLoan/" + DOMElements.currentObj.id, function (result) {
                 $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result2) {
+                    if(currentPage===3)
                     loadLoansData(indexG, searchG, true);
                     openLoanGlobal(result2);
                 });
@@ -855,6 +834,7 @@ function loadLoanDoActions(DOMElements) {
                                         console.log(result);
                                         if (result.code === 0) {
                                             $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result2) {
+                                                if(currentPage===3)
                                                 loadLoansData(indexG, searchG, true);
                                                 openLoanGlobal(result2);
                                                 alert("გადახდა დაფიქსირდა წარმატებით!");

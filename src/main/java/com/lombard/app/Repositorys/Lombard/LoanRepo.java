@@ -2,6 +2,7 @@ package com.lombard.app.Repositorys.Lombard;
 
 
 import com.lombard.app.models.Filial;
+import com.lombard.app.models.Lombard.Client;
 import com.lombard.app.models.Lombard.Loan;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -84,4 +85,7 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
     List<Loan> findTodayPay( @Param("fromD") Date from,@Param("toD")  Date to,
                              @Param("filial")Filial filial,
                              @Param("statuses") List<Integer> statuses);
+
+
+    Page<Loan> findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc( Client client,  boolean isActive, List<Integer> statuses, Pageable pageable);
 }

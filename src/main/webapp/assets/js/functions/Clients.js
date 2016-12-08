@@ -123,39 +123,160 @@ function loadClientsData(index, search) {
 }
 openUserGlobal = function (currentElement) {
     showModalWithTableInside(function (head, body, modal) {
-        body.html("");
+        body.html(clientProfiletemplate);
+        var loansDiv=$("#tab5_1");
+        var graphsDiv=$("#tab5_2");
+        var paymentsDiv=$("#tab5_3");
+        var actionsDiv=$("#tab6_1")
+        loansDiv.append('<div class="row">' +
+            '<div class="col-md-3">' +
+            '<label>' +
+            '<input id="closedParamClient" type="checkbox" data-checkbox="icheckbox_square-blue">დახურული' +
+            '</label>' +
+            '</div><div class="col-md-3">' +
+            '<label>' +
+            '<input id="openedParamClient" type="checkbox" data-checkbox="icheckbox_square-blue">მიმდინარე' +
+            '</label></div><div class="col-md-4"><div class="input-group">            ' +
+            '<div class="icheck-list"><label>' +
+            '<input id="lateParamClient" type="checkbox" data-checkbox="icheckbox_square-blue">დაგვიანებული' +
+            '</label></div></div></div>' +
+            '</div>');
+        loansDiv.append(clientLoansTableTemplate);
+        loansDiv.append(clPaginationTemplate);
+        var clPagination=$("#cLPagination");
+        var loansDataTable=$("#clientLoansDataTable");
+        var loansDataTableBody=$("#clientLoansDataTableBody");
+        var DOMElements={
+            loansDataTable:loansDataTable,
+            loansDataTableBody:loansDataTableBody,
+            clPagination:clPagination,
+            modal:modal,
+            actionsDiv:actionsDiv
+        };
+        loadClientLoansToDiv(DOMElements,currentElement.id,0);
+        initClientActionsButtons(DOMElements,currentElement);
         head.html("");
-        $.getJSON("getClientloans/" + currentElement.id, function (result) {
-            head.html("<strong style='font-family: font1'>კლიენტი: " + currentElement.name +
-                " " +
-                currentElement.surname +
-                " // გაცემულია " + result.length + " სესხი</strong>")
-            body.html(loansForClientGridTemplate)
-            var clientLoansContainerDiv = $("#clientLoansContainerDiv");
-            for (key in result) {
-                var item = result[key];
-                var statusString = '<span style="font-family: font1" class="label label-default"><i class="fa fa-money" aria-hidden="true"></i>' + item.loanSum + ' ლარი</span>' +
-                    '<span style="font-family: font1" class="label label-default">გაიცა: ' + moment(new Date(item.createDate)).locale("ka").format("L") + '</span>' +
-                    (item.closed ? '<span style="font-family: font1" class="label label-blue">დახურული</span>' : "") +
-                    (item.status === 4 ? '<span style="font-family: font1" class="label label-danger">დაგვიანება</span>' : "");
-                clientLoansContainerDiv.append('<div value="' + key + '" class="client-loan stage-item message-item media">' +
-                    '<div class="media">' +
-                    '<img src="assets/images/avatars/avatar11_big.png" alt="avatar 3" width="40" class="sender-img">' +
-                    '   <div class="media-body">' +
-                    '   <div style="width: 20%" class="sender">' + item.number + '</div>' +
-                    '<div style="width: 70%;" class="subject">' + statusString + '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>')
-            }
-            $(".client-loan").click(function () {
-                var item = result[$(this).attr("value")];
-                modal.modal("hide");
-                openLoanGlobal(item);
-            })
-        })
+        $('input').iCheck({
+            checkboxClass: 'icheckbox_minimal',
+            radioClass: 'iradio_minimal',
+            increaseArea: '20%' // optional
+        });
+
 
     }, function () {
 
-    }, 900)
+    }, 1024)
+};
+function initClientActionsButtons(DOMElements2,currentElement){
+    DOMElements2.actionsDiv.append('<div style=" text-align: center;" class="row">' +
+        '<button id="newLoanBtn" style="width: 80%" type="button" class="btn btn-primary btn-rounded">სესხის გაცემა</button></div>')
+    $("#newLoanBtn").click(function () {
+        sendLoanData = {mobiles: [], laptops: [], gold: [], other: [], homeTech: []};
+        var modal7 = $("#myModal7");
+        var tab7_1 = $("#tab7_1");
+        var tab7_2 = $("#tab7_2");
+        var tab7_3 = $("#tab7_3");
+        var projectName = $("#projectName2");
+        var clientChooserPlace = $("#clientChooserPlace");
+        var uzrunvelyofaInputPlace = $("#uzrunvelyofaInputPlace");
+        var loanDataBodyDiv = $("#loanDataBodyDiv");
+        var loanActionsDiv = $("#loanActionsDiv");
+        var DOMElements = {
+            projectName: projectName,
+            clientChooserPlace: clientChooserPlace,
+            uzrunvelyofaInputPlace: uzrunvelyofaInputPlace,
+            loanDataBodyDiv: loanDataBodyDiv,
+            loanActionsDiv: loanActionsDiv,
+            uzrunvelyofaFormPlace: $("#uzrunvelyofaFormPlace"),
+            uzrunvelyofaGridPlace: $("#uzrunvelyofaGridPlace"),
+            modal: modal7
+        };
+        projectName.html("ახალი სესხის გაცემა");
+
+
+        sendLoanData.client=currentElement;
+        drawClientChooser(DOMElements);
+        drawLoanInfoAdder(DOMElements);
+        updateSideInfo(DOMElements)
+        modal7.modal("show");
+        DOMElements2.modal.modal("hide");
+    })
+}
+function loadClientLoansToDiv(DOMElements,id,page){
+    $("#closedParamClient").unbind();
+    $("#closedParamClient").on('ifChanged', function () {
+        loadClientLoansToDiv(DOMElements,id,0);
+    });
+    $("#openedParamClient").unbind();
+    $("#openedParamClient").on('ifChanged', function () {
+        loadClientLoansToDiv(DOMElements,id,0);
+    });
+    $("#lateParamClient").unbind();
+    $("#lateParamClient").on('ifChanged', function () {
+        loadClientLoansToDiv(DOMElements,id,0);
+    });
+    $.getJSON("getClientloans/" + id+"/"+page+"?closed=" +
+        ($("#closedParamClient").is(":checked") ? "true" : "false") +
+        "&opened=" +
+        ($("#openedParamClient").is(":checked") ? "true" : "false") +
+        "&late=" +
+        ($("#lateParamClient").is(":checked") ? "true" : "false"), function (result) {
+        DOMElements.loansDataTableBody.html("");
+        var dataArray = result["content"];
+        var totalPages = result["totalPages"];
+        var totalElements = result["totalElements"];
+        for (var i = 0; i < dataArray.length; i++) {
+            var currentElement = dataArray[i];
+            console.log(new Date(currentElement["createDate"]));
+            var itemLogos="";
+            for(typeKey in currentElement.loanUzrunvelyofaTypes){
+                if(currentElement.loanUzrunvelyofaTypes[typeKey]===3)
+                    itemLogos+="<img style='height: 20px' src='assets/images/gold.png' />";
+                if(currentElement.loanUzrunvelyofaTypes[typeKey]===1)
+                    itemLogos+="<img style='height: 20px' src='assets/images/phone.png' />";
+                if(currentElement.loanUzrunvelyofaTypes[typeKey]===2)
+                    itemLogos+="<img style='height: 20px' src='assets/images/lap.png' />";
+                if(currentElement.loanUzrunvelyofaTypes[typeKey]===4)
+                    itemLogos+="<img style='height: 20px' src='assets/images/homeTech.png' />";
+            }
+            console.log(currentElement["createDate"]);
+
+            DOMElements.loansDataTableBody.append("<tr class='" + (currentElement.status === 4 ? "danger" : "") + "'>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>"  + itemLogos + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + '<i class="fa fa-balance-scale" aria-hidden="true"></i> ' + currentElement["number"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'><img style='height: 15px;padding-bottom: 4px;;' src='assets/images/lari.png'>" + currentElement["loanSum"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" +
+                '<i class="fa fa-calendar" aria-hidden="true"></i>' +
+                (currentElement.closed ? moment(new Date(currentElement["closeDate"])).locale("ka").format("L")
+                    : moment(new Date(currentElement["nextPaymentDate"])).locale("ka").format("L")) + "</td>" +
+                "<td><a value='" + currentElement['id'] + "' class='loanActionButton' href='#'> " +
+                "<i class='fa fa-bars' aria-hidden='true'></i></a></td>" +
+                "</tr>");
+        }
+        var gridRow = $('.gridRowClient');
+        gridRow.css('cursor', 'pointer');
+        gridRow.unbind();
+        gridRow.click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            console.log($(this).attr("value"));
+
+            openLoanGlobal(currentElement);
+            DOMElements.modal.modal("hide");
+        });
+        DOMElements.clPagination.html("");
+        for (i = 0; i < totalPages; i++) {
+            if (i > page - 3 && i < page + 3 || i === 0 || i === (totalPages - 1))
+                DOMElements.clPagination.append('<li value="' + i + '" class="paginate_button paginate_button2' + (page == i ? 'active"' : '') + '"><a href="#">' + (i + 1) + '</a></li>');
+
+        }
+        $(".paginate_button2").click(function () {
+            //console.log($(this).val())
+            currentPage = $(this).val();
+            loadClientLoansToDiv(DOMElements,id,currentPage)
+
+        });
+
+
+
+    },{})
 }
