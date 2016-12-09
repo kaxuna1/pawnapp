@@ -25,7 +25,6 @@ public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long> {
             " u.IMEI  LIKE CONCAT('%',:search,'%') or" +
             " c.personalNumber LIKE CONCAT('%',:search,'%'))")
     Page<Uzrunvelyofa> findForFilial(@Param("search") String search,
-                                     @Param("status") int status,
                                      @Param("filial") Filial filial,
                                      @Param("statuses")List<Integer> statuses, Pageable pageable);
 

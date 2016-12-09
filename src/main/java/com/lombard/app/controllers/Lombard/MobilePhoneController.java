@@ -132,8 +132,9 @@ public class MobilePhoneController {
 
 
         return uzrunvelyofaRepo.findForFilial(search,
-                UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(),
-                sessionRepository.findOne(sessionId).getUser().getFilial(),statuses,constructPageSpecification(index));
+                sessionRepository.findOne(sessionId).getUser().getFilial(),
+                statuses,
+                constructPageSpecification(index));
     }
 
 

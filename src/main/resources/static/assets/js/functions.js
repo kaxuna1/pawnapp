@@ -6,7 +6,7 @@
 var currentFunction;
 var datarowSlide = false;
 var dashRow = false;
-var currentPage=1;
+var currentPage = 1;
 $.getJSON("/getsessionstatus", function (result) {
     if (!result["isactive"]) {
         eraseCookie("projectSessionId");
@@ -335,7 +335,7 @@ $(document).ready(function () {
         });
 
         $("#loadClientsButton").click(function () {
-            currentPage=2;
+            currentPage = 2;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
@@ -364,10 +364,42 @@ $(document).ready(function () {
         });
 
         $("#loadConfiscatedButton").click(function () {
-            currentPage=4;
+            currentPage = 4;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
+            $("#searchparams").append('<div class="row">    ' +
+                '<div class="col-md-2">        ' +
+                '<label>' +
+                '<input id="closedParam" type="checkbox" data-checkbox="icheckbox_square-blue">დახურული</label>' +
+                '    </div>    <div class="col-md-2">        ' +
+                '<label>' +
+                '<input id="openedParam" type="checkbox" data-checkbox="icheckbox_square-blue">მიმდინარე' +
+                '</label>    ' +
+                '</div>    ' +
+                '<div class="col-md-2">        ' +
+                '<div class="input-group">' +
+                '<div class="icheck-list">' +
+                ' <label>' +
+                '<input id="lateParam" type="checkbox" data-checkbox="icheckbox_square-blue">დაგვიანებული' +
+                '</label>            ' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="col-md-2">     ' +
+                '<div class="input-group">' +
+                '<div class="icheck-list">' +
+                ' <label>' +
+                '<input id="lateParam" type="checkbox" data-checkbox="icheckbox_square-blue">დაგვიანებული' +
+                '</label>            ' +
+                '</div>' +
+                '</div>' +
+                '</div></div>');
+            $('input').iCheck({
+                checkboxClass: 'icheckbox_minimal',
+                radioClass: 'iradio_minimal',
+                increaseArea: '20%' // optional
+            });
             if (datarowSlide) {
                 $("#dataRow").slideDown("slow");
                 $("#dashRow").slideUp("slow");
@@ -378,7 +410,7 @@ $(document).ready(function () {
         });
 
         $("#loadLoansButton").click(function () {
-            currentPage=3;
+            currentPage = 3;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
@@ -418,7 +450,7 @@ $(document).ready(function () {
 
         });
         $("#loadConditionsButton").click(function () {
-            currentPage=5;
+            currentPage = 5;
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
             $("#searchparams").html("");
