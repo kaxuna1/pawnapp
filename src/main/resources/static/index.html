@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        var kkk = "kaxa";
+        function createCookie(name, value, days) {
+            var expires;
+
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toGMTString();
+            } else {
+                expires = "";
+            }
+            document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+        }
+        var currentTender = null;
+        function readCookie(name) {
+            var nameEQ = encodeURIComponent(name) + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            createCookie(name, "", -1);
+        }
+
+        if (!readCookie("projectSessionId")) {
+            window.location.href = "/login.html";
+        }
+    </script>
+    <style>
+        .highcharts-background
+    </style>
+    <script src="sockjs-0.3.4.js"></script>
+    <script src="stomp.js"></script>
+    <script>
+        var stompClient = null;
+        function bidReceived(bid) {
+
+        }
+
+        function connect() {
+            var socket = new SockJS('/bid');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/bid', function (bid) {
+                    bid = JSON.parse(bid["body"])
+                    console.log(bid);
+                    console.log(parseInt(bid["tenderID"]) === parseInt(currentTender))
+                    if (parseInt(bid["tenderID"]) == parseInt(currentTender)) {
+                        if (parseInt(bid["userID"]) === parseInt(readCookie("userId")) && !bid["bid"]) {
+                            alert("არ მოხდა თქვენი შემოთავაზების მიღება")
+                        } else {
+                            if (bid['bid']) {
+                                $("#productBestBid" + bid['productID']).html(bid['bid']);
+
+                                if (parseInt(bid["userID"]) === parseInt(readCookie("userId"))) {
+                                    $("#" + bid['productID'] + "id").css("background", "green")
+                                } else {
+                                    $("#" + bid['productID'] + "id").css("background", "red")
+                                }
+                            }
+
+                        }
+
+                    }
+                });
+            });
+        }
+
+        function disconnect() {
+            if (stompClient != null) {
+                stompClient.disconnect();
+            }
+            console.log("Disconnected");
+        }
+
+        function sendBid(data) {
+            stompClient.send("/app/bid", {}, JSON.stringify(data));
+        }
+
+
+    </script>
+    <style>
+        @font-face {
+            font-family: font1;
+            src: url('assets/font.ttf');
+        }
+
+        * {
+            font-family: font1;
+        }
+
+        strong {
+            font-family: font1;
+        }
+    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="description" content="admin-themes-lab">
+    <meta name="author" content="themes-lab">
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/png">
+    <title>ლომბარდის მართვა</title>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/theme.css" rel="stylesheet">
+    <link href="assets/css/ui.css" rel="stylesheet">
+    <link href="assets/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <link href="assets/plugins/jstree/src/themes/default/style.min.css" rel="stylesheet">
+    <script src="assets/plugins/modernizr/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    <link href="assets/plugins/charts-morris/morris.min.css" rel="stylesheet">
+    <script src="https://use.fontawesome.com/d80ea315ce.js"></script>
+    <style>
+        td {
+            color: #000;
+        }
+    </style>
+</head>
+<!-- BEGIN BODY -->
+<body onload="disconnect();" class="fixed-topbar fixed-sidebar theme-sdtl color-default">
+<!--[if lt IE 7]>
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade
+    your browser</a> to improve your experience.</p>
+<![endif]-->
+<section>
+    <!-- BEGIN SIDEBAR -->
+    <div class="sidebar">
+        <!--<div class="logopanel">
+            <h1>
+                <a href="index.html"></a>
+            </h1>
+        </div>-->
+        <div class="sidebar-inner">
+            <div class="sidebar-top">
+                <form style="font-family: font1;" onkeypress="search(event.keyCode);return event.keyCode != 13;"
+                      method="post" class="searchform">
+                    <input type="text" style="font-family: font1;" class="form-control" name="keyword" id="searchText"
+                           placeholder="ძებნა...">
+                </form>
+            </div>
+            <div class="menu-title">
+                ნავიგაცია
+            </div>
+            <ul id="navigationUl" class="nav nav-sidebar">
+
+            </ul>
+
+            <div class="sidebar-footer clearfix">
+                <a class="pull-left toggle_fullscreen" href="#" data-rel="tooltip" data-placement="top"
+                   data-original-title="Fullscreen">
+                    <i class="icon-size-fullscreen"></i></a>
+
+            </div>
+        </div>
+    </div>
+    <!-- END SIDEBAR -->
+    <div class="main-content">
+        <!-- BEGIN TOPBAR -->
+        <div class="topbar">
+            <div class="header-left">
+                <div class="topnav">
+                    <a class="menutoggle" href="#" data-toggle="sidebar-collapsed"><span
+                            class="menu__handle"><span>Menu</span></span></a>
+                    <ul id="topPanelButtons" class="nav nav-icons">
+
+                    </ul>
+
+                </div>
+            </div>
+            <div class="header-right">
+                <ul class="header-menu nav navbar-nav">
+                    <!-- BEGIN USER DROPDOWN -->
+                    <li id="quickview-toggle">
+                        <a class="pull-left btn-effect" href="#" data-modal="modal-1" data-rel="tooltip"
+                           data-placement="top"
+                           id="settingsBtn" data-original-title="პარამეტრები">
+                            <i class="fa fa-user"></i>
+                        </a></li>
+                    <li id="quickview-toggle">
+                        <a class="pull-left btn-effect" href="#" data-modal="modal-1" data-rel="tooltip"
+                           data-placement="top"
+                           id="logoutBtn" data-original-title="გამოსვლა">
+                            <i class="fa fa-power-off" aria-hidden="true"></i>
+                        </a></li>
+
+                    <!-- END USER DROPDOWN -->
+                    <!-- BEGIN NOTIFICATION DROPDOWN -->
+                </ul>
+            </div>
+            <!-- header-right -->
+        </div>
+        <!-- END TOPBAR -->
+        <!-- BEGIN PAGE CONTENT -->
+        <div class="page-content page-thin">
+            <!-- <div class="header">
+                 <h2><strong>ტენდერები</strong></h2>
+             </div>-->
+            <div id="dashRow" class="row">
+                <div class="col-xlg-2 col-small-stats">
+                    <div class="row">
+                        <div class="col-xlg-12 col-lg-4 col-sm-4">
+                            <div class="panel">
+                                <div class="panel-content widget-small bg-green">
+                                    <div class="title">
+                                        <h1 style="font-family: font1">გაცემული სესხები</h1>
+                                        <p>დღეს გაცემული სესხები</p>
+                                        <span style="color:white; opacity: 1" id="loansMadeTodayDiv"></span>
+                                    </div>
+                                    <div class="content">
+                                        <div id="stock-virgin-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xlg-12 col-lg-4 col-sm-4">
+                            <div class="panel">
+                                <div class="panel-content widget-small bg-purple">
+                                    <div class="title">
+                                        <h1 style="font-family: font1">გადასახდელი პროცენტები</h1>
+                                        <p>დღეს გადასახდელი პროცენტები</p>
+                                        <span style="color:white; opacity: 1" id="todayPayInterestsDiv"></span>
+                                    </div>
+                                    <div class="content">
+                                        <div id="stock-ebay-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xlg-12 col-lg-4 col-sm-4">
+                            <div class="panel">
+                                <div class="panel-content widget-small bg-primary">
+                                    <div class="title">
+                                        <h1 style="font-family: font1">შემოსული გადახდები</h1>
+                                        <p>დღეს შემოსული გადახდები</p>
+                                        <span style="color:white; opacity: 1" id="payedTodayDiv"></span>
+                                    </div>
+                                    <div class="content">
+                                        <div id="stock-facebook-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xlg-4 col-financial-stocks">
+                    <div class="panel">
+                        <div class="panel-header panel-controls">
+                            <h3 style="font-family: font1"><i class="icon-graph"></i> <strong
+                                    style="font-family: font1">ფინანსური</strong> გრაფიკები</h3>
+                        </div>
+                        <div class="panel-content widget-full widget-stock stock1">
+                            <div class="tabs tabs-linetriangle">
+                                <ul class="nav nav-tabs nav-4" role="tablist">
+                                    <li class="nav-item active lines-1" role="tab" data-toggle="tab">
+                                        <a href="#loansChart-tab" id="loansChart" data-toggle="tab">
+                                            <span class="title">გაცემული სესხები</span>
+
+                                        </a>
+                                    </li>
+                                    <li class="nav-item  lines-3" role="tab" data-toggle="tab">
+                                        <a href="#interestChart-tab" id="interestChart" data-toggle="tab">
+                                            <span class="title">დარიცხული პროცენტები</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item lines-3" role="tab" data-toggle="tab">
+                                        <a href="#paymentsChart-tab" id="paymentsChart" data-toggle="tab">
+                                            <span class="title">გადახდები</span>
+
+                                        </a>
+                                    </li>
+                                    <li class="nav-item lines-3" role="tab" data-toggle="tab">
+                                        <a href="#apple-tab" id="apple" data-toggle="tab">
+                                            <span class="title">დაგვიანებები</span>
+
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane active" id="loansChart-tab">
+                                        <div id="stock-loansChart"></div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane " id="interestChart-tab">
+                                        <div id="stock-interestChart">
+
+                                        </div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="paymentsChart-tab">
+                                        <div id="stock-paymentsChart"></div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane" id="apple-tab">
+                                        <div id="stock-apple"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xlg-6">
+                    <div class="panel">
+                        <div class="panel-content widget-full widget-stock stock2">
+                            <div class="tab_right">
+                                <ul class="nav nav-tabs">
+                                    <li class="lines-3 dashDataTodayMenu dashDataTodayMenuFirst active">
+                                        <a href="#loansTodayData-tab" id="loansTodayData" data-toggle="tab">
+                                            <div class="clearfix">
+                                                <span class="title pull-left">დღეს გადახდები</span>
+                                                <span class="pull-right"></span>
+                                            </div>
+                                            <div class="clearfix">
+
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li class="lines-3 dashDataTodayMenu ">
+                                        <a href="#loansGivenToday-tab" id="loansGivenToday" data-toggle="tab">
+                                            <div class="clearfix">
+                                                <span class="title pull-left">დღეს გაცემული</span>
+                                                <span class="pull-right"></span>
+                                            </div>
+                                            <div class="clearfix"></div>
+                                        </a>
+                                    </li>
+                                    <li class="lines-3 dashDataTodayMenu">
+                                        <a href="#itemsToday-tab" id="itemsToday" data-toggle="tab">
+                                            <div class="clearfix">
+                                                <span class="title pull-left">შემოსული ნივთები</span>
+                                                <span class="pull-right"></span>
+                                            </div>
+                                            <div class="clearfix"></div>
+                                        </a>
+                                    </li>
+                                    <li class="lines-3 dashDataTodayMenu">
+                                        <a href="#soldData-tab" id="soldData" data-toggle="tab">
+                                            <div class="clearfix">
+                                                <span class="title pull-left">გაყიდული ნივთები</span>
+                                                <span class="pull-right"></span>
+                                            </div>
+                                            <div class="clearfix">
+                                                <span class="c-gray pull-left"><strong>18.96</strong></span>
+                                                <span class="c-red pull-right">-1.052%</span>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                    <div class="title-stock">
+                                        <h1 id="dashDataHeader"></h1>
+                                    </div>
+                                    <div class="tab-pane dashDataTodayMenuFirst dashDataTodayMenuTab active"
+                                         id="loansTodayData-tab">
+                                        <div id="stock-loansTodayData">
+                                            <table id="curLoansToPayDataTable" class="table table-hover table-dynamic">
+                                                <thead>
+                                                <tr>
+                                                    <th>ნომერი</th>
+                                                    <th>კლიენტი</th>
+                                                    <th>რაოდენობა</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="loansToPayDataTable">
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="company-info">info 1</div>
+                                    </div>
+                                    <div class="tab-pane dashDataTodayMenuTab" id="loansGivenToday-tab">
+                                        <div id="stock-loansGivenToday">
+                                            <table id="curLoansDataTable" class="table table-hover table-dynamic">
+                                                <thead>
+                                                <tr>
+                                                    <th>ნომერი</th>
+                                                    <th>კლიენტი</th>
+                                                    <th>რაოდენობა</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody id="loansTodayDataTable">
+
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="company-info">info 2</div>
+                                    </div>
+                                    <div class="tab-pane dashDataTodayMenuTab" id="itemsToday-tab">
+                                        <div id="stock-itemsToday">kaxa 3</div>
+                                        <div class="company-info">info 3</div>
+                                    </div>
+                                    <div class="tab-pane dashDataTodayMenuTab" id="soldData-tab">
+                                        <div id="stock-soldData">kaxa 4</div>
+                                        <div class="company-info">info 4</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="dataRow" class="row">
+                <div class="col-lg-12 portlets">
+                    <div class="panel">
+                        <div class="panel-header panel-controls">
+                        </div>
+                        <div id="mainPanel" class="panel-content">
+                            <div class="m-b-20">
+
+                                <div id="addNewDiv">
+
+
+                                </div>
+
+                                <div id="searchparams">
+
+                                </div>
+                            </div>
+                            <table class="table table-hover dataTable table-striped" id="table-editable">
+                                <thead>
+                                <tr id="dataGridHeader">
+
+                                </tr>
+                                </thead>
+                                <tbody id="dataGridBody">
+                                </tbody>
+                            </table>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="dataTables_paginate paging_simple_numbers"
+                                         id="DataTables_Table_0_paginate">
+                                        <ul class="pagination" id="paginationUl">
+
+                                            <li class="paginate_button active" aria-controls="DataTables_Table_0"
+                                                tabindex="0"><a href="#">1</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">
+                <div class="copyright">
+                    <p class="pull-left sm-pull-reset">
+                        <span>Copyright <span class="copyright">©</span> 2015 </span>
+                        <span>კახა გელაშვილი</span>.
+                        <span>All rights reserved. </span>
+                    </p>
+
+                    <p class="pull-right sm-pull-reset">
+                        <span><a href="#" class="m-r-10">კონტაქტი</a> | <a href="#" class="m-l-10 m-r-10">მოხმარების
+                            წესები</a> | <a href="#" class="m-l-10">ჩვენს შესახებ</a></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE CONTENT -->
+    </div>
+    <!-- END MAIN CONTENT -->
+    <!-- BEGIN BUILDER -->
+    <!-- END BUILDER -->
+</section>
+<!-- BEGIN QUICKVIEW SIDEBAR -->
+<!-- END QUICKVIEW SIDEBAR -->
+<!-- BEGIN SEARCH -->
+
+<!-- END SEARCH -->
+<!-- BEGIN PRELOADER -->
+<div class="loader-overlay">
+    <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            </div>
+            <div id="modalBody" class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+                <button id="registrationModalSaveButton" type="button" class="btn btn-primary">შენახვა</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel2"></h4>
+            </div>
+            <div id="modalBody2" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+                    <div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="text-left">პროდუქცია</th>
+                            </tr>
+                            </thead>
+                            <tbody id="productsDataTable">
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <button id="addProductToFilial"> -></button>
+                        <br>
+                        <button id="removeProductFromFilial"> <-</button>
+                    </div>
+                    <div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="text-left">ფილიალის პროდუქცია</th>
+                            </tr>
+                            </thead>
+                            <tbody id="filialProductsDataTable">
+                            <tr class="item-row">
+                                <td>
+                                    <input type="checkbox"/> ვაშლი
+                                </td>
+
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+            <div id="parcelModelFooter" class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal3" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel3"></h4>
+            </div>
+            <div id="modalBody3" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+                    <div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="text-left">პროდუქცია</th>
+                                <th class="text-left">რაოდენობა</th>
+                            </tr>
+                            </thead>
+                            <tbody id="productsRequestDataTable">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+            <div id="parcelModelFooter3" class="modal-footer">
+                <button type="button" id="confirmBtn" class="btn btn-default">დადასტურება</button>
+                <button type="button" id="declineBtn" class="btn btn-default">უარყოფა</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal4" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel4"></h4>
+            </div>
+            <div id="modalBody4" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+                    <div>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th class="text-left">პროდუქცია</th>
+                                <th class="text-left">რაოდენობა</th>
+                            </tr>
+                            </thead>
+                            <tbody id="productsRequestDataTable2">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+            <div id="parcelModelFooter4" class="modal-footer">
+                <button type="button" id="makeRequestBTN" class="btn btn-default">დადასტურება</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal5" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel5"></h4>
+            </div>
+            <div id="modalBody5" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+
+                    <div class="panel" style="width: 100%">
+                        <div class="panel-content">
+                            <ul class="nav nav-tabs">
+                                <li class="active"><a href="#tab1_1" data-toggle="tab" aria-expanded="true">პროდუქცია
+                                    მოთხოვნაში</a></li>
+                                <li class=""><a href="#tab1_2" data-toggle="tab" aria-expanded="false">მინიჭება
+                                    ტენდერზე</a></li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade active in" id="tab1_1">
+                                    <table class="table table-hover dataTable">
+                                        <thead>
+                                        <tr>
+                                            <th class="text-left">პროდუქცია</th>
+                                            <th class="text-left">რაოდენობა</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="productsRequestDataTable3">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="tab-pane fade" id="tab1_2">
+                                    <table class="table table-hover dataTable">
+                                        <tbody id="chooseTenderButtons">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="parcelModelFooter5" class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal6" tabindex="-1" style="overflow-y:scroll" role="dialog"
+     aria-labelledby="myModalLabel2">
+    <div class="modal-dialog" style="width: 90%" role="document">
+        <div style="min-height: 600px" class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel6"></h4>
+            </div>
+            <div id="modalBody6" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+
+                    <div class="panel" style="width: 100%">
+                        <div class="panel-content">
+                            <ul id="tenderNavigation" class="nav nav-tabs">
+                                <li class="active"><a href="#tab2_1" data-toggle="tab" aria-expanded="true">
+                                    <i class="fa fa-info-circle" aria-hidden="true"></i>ინფორმაცია</a>
+                                </li>
+                                <li class=""><a href="#tab2_2" data-toggle="tab" aria-expanded="false">გადახდების
+                                    ისტორია(სრული)</a></li>
+                                <li class=""><a href="#tab2_3" data-toggle="tab" aria-expanded="false">რუკა</a></li>
+                            </ul>
+                            <div id="tenderTabs" class="tab-content">
+                                <div class="tab-pane fade active in" id="tab2_1">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-md-7">
+                                                <h3 id="projectName"></h3>
+                                                <div class="panel-group panel-accordion dark-accordion" id="accordion2">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a class="" data-toggle="collapse"
+                                                                   data-parent="#accordion2" href="#collapseOne2"
+                                                                   aria-expanded="true">
+                                                                    <i class="fa fa-history" aria-hidden="true"></i>
+                                                                    მოქმედებების ისტორია
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseOne2" class="panel-collapse collapse in"
+                                                             aria-expanded="true">
+                                                            <div id="movementsGridDiv" class="panel-body">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a class="collapsed" data-toggle="collapse"
+                                                                   data-parent="#accordion2" href="#collapseTwo2"
+                                                                   aria-expanded="false">
+                                                                    <i class="fa fa-history" aria-hidden="true"></i>
+                                                                    დაფარვის ისტორია
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseTwo2" class="panel-collapse collapse"
+                                                             aria-expanded="false" style="height: 0px;">
+                                                            <ul id="graphsNavigation" class="nav nav-tabs">
+                                                                <li class="active"><a href="#tab4_1" data-toggle="tab"
+                                                                                      aria-expanded="true">
+                                                                    <i class="fa fa-area-chart" aria-hidden="true"></i>
+                                                                    გრაფიკები
+                                                                </a></li>
+                                                                <li class=""><a href="#tab4_2" data-toggle="tab"
+                                                                                aria-expanded="false">
+                                                                    <i class="fa fa-percent" aria-hidden="true"></i>
+                                                                    დარიცხული პროცენტები</a></li>
+                                                                <li class=""><a href="#tab4_3" data-toggle="tab"
+                                                                                aria-expanded="false">
+                                                                    <i class="fa fa-credit-card" aria-hidden="true"></i>
+                                                                    გადახდები</a></li>
+                                                            </ul>
+                                                            <div id="graphsTabs" class="tab-content">
+                                                                <div class="tab-pane fade active in" id="tab4_1">
+                                                                    <div id="projectCharts" style="height: 300px"
+                                                                         class="panel-body">
+
+                                                                    </div>
+                                                                </div>
+                                                                <div class="tab-pane fade" id="tab4_2">
+                                                                    <div id="loanInterestsGridDiv">
+
+                                                                    </div>
+                                                                </div>
+                                                                <div class="tab-pane fade" id="tab4_3">
+                                                                    <div id="loanPaymentsGridDiv">
+
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a data-toggle="collapse" data-parent="#accordion2"
+                                                                   href="#collapseThree2" aria-expanded="false"
+                                                                   class="collapsed">
+                                                                    <i class="fa fa-key" aria-hidden="true"></i>
+                                                                    დატვირთული უზრუნველყოფა
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseThree2" class="panel-collapse collapse"
+                                                             aria-expanded="false" style="height: 0px;">
+                                                            <div id="uzrunvelyofaDataGridDiv" class="panel-body">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-5">
+                                                <h3 id="projectInfoColumn2Header"><strong style="font-family: font1">დამატებითი
+                                                    ინფორმაცია</strong>
+                                                </h3>
+                                                <div class="panel-group panel-accordion dark-accordion" id="accordion3">
+
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a class="" data-toggle="collapse"
+                                                                   data-parent="#accordion3" href="#collapseOne4"
+                                                                   aria-expanded="true">
+                                                                    <i class="fa fa-balance-scale"
+                                                                       aria-hidden="true"></i>
+                                                                    ინფორმაცია სესხზე
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseOne4" class="panel-collapse collapse in"
+                                                             aria-expanded="true">
+                                                            <div id="loanInfoDiv" class="panel-body">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a class="collapsed" data-toggle="collapse"
+                                                                   data-parent="#accordion3" href="#collapseOne3"
+                                                                   aria-expanded="false">
+                                                                    <i class="fa fa-user-circle-o"
+                                                                       aria-hidden="true"></i>
+                                                                    ინფორმაცია კლიენტზე
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseOne3" class="panel-collapse collapse"
+                                                             aria-expanded="true">
+                                                            <div id="clientInfoButtonsPlace"></div>
+                                                            <div id="clientInfoDataPlace" class="panel-body">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a data-toggle="collapse" data-parent="#accordion3"
+                                                                   href="#collapseThree4" aria-expanded="false"
+                                                                   class="collapsed">
+                                                                    <i class="fa fa-mixcloud" aria-hidden="true"></i>
+                                                                    მოქმედებების მოდული
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseThree4" class="panel-collapse collapse"
+                                                             aria-expanded="false" style="height: 0px;">
+                                                            <div id="loanDoActionsDiv" class="panel-body">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="tab-pane fade" id="tab2_2">
+                                    <div id="buttonsPanelStages"></div>
+                                    <div id="bodyPanelStages"></div>
+                                    <div id="buttonsPanelActions"></div>
+                                    <div id="bodyPanelActions"></div>
+                                    <div id="buttonsPanelAction"></div>
+                                    <div id="bodyPanelAction">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="tab2_3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="parcelModelFooter6" class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myModal7" tabindex="-1" style="overflow-y:scroll" role="dialog"
+     aria-labelledby="myModalLabel7">
+    <div class="modal-dialog" style="width: 90%" role="document">
+        <div style="min-height: 600px" class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel7"></h4>
+            </div>
+            <div id="modalBody7" class="modal-body">
+
+                <div style="display:inline-flex;width: 100%">
+
+                    <div class="panel" style="width: 100%">
+                        <div class="panel-content">
+                            <ul id="tenderNavigation2" class="nav nav-tabs">
+                                <li class="active"><a href="#tab7_1" data-toggle="tab" aria-expanded="true">სესხის ტიპი
+                                    1</a></li>
+                                <li class=""><a href="#tab7_2" data-toggle="tab" aria-expanded="false">სესხის ტიპი 2</a>
+                                </li>
+                                <li class=""><a href="#tab7_3" data-toggle="tab" aria-expanded="false">სესხის ტიპი 3</a>
+                                </li>
+                            </ul>
+                            <div id="tenderTabs2" class="tab-content">
+                                <div class="tab-pane fade active in" id="tab7_1">
+                                    <div class="col-md-12">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h3 id="projectName2"></h3>
+                                                <div class="panel-group panel-accordion dark-accordion" id="accordion4">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a data-toggle="collapse" data-parent="#accordion4"
+                                                                   href="#collapseThree27" aria-expanded="true"
+                                                                   class="">
+                                                                    <i class="fa fa-key" aria-hidden="true"></i>
+                                                                    სესხის შევსება
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseThree27" class="panel-collapse in collapse"
+                                                             aria-expanded="true" style="height: 0px;">
+                                                            <div id="uzrunvelyofaInputPlace" class="panel-body"></div>
+                                                            <div id="uzrunvelyofaFormPlace" class="panel-body"></div>
+                                                            <div id="uzrunvelyofaGridPlace" class="panel-body"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <h3 id="projectInfoColumn2Header2"><strong>ინფორმაცია სესხზე</strong>
+                                                </h3>
+                                                <div class="panel-group panel-accordion dark-accordion" id="accordion5">
+                                                    <div class="panel panel-default">
+                                                        <div class="panel-heading">
+                                                            <h4>
+                                                                <a class="" data-toggle="collapse"
+                                                                   data-parent="#accordion5" href="#collapseOne5"
+                                                                   aria-expanded="true">
+                                                                    <i class="fa fa-balance-scale"
+                                                                       aria-hidden="true"></i>
+                                                                    ინფორმაცია სესხზე
+                                                                </a>
+                                                            </h4>
+                                                        </div>
+                                                        <div id="collapseOne5" class="panel-collapse collapse in"
+                                                             aria-expanded="true">
+                                                            <div id="loanDataBodyDiv" class="panel-body"></div>
+                                                            <div class="panel-body" id="loanActionsDiv"></div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div class="tab-pane fade" id="tab7_2">
+                                    <div id="buttonsPanel1"></div>
+                                    <div id="bodyPanel1"></div>
+                                    <div id="buttonsPanel2"></div>
+                                    <div id="bodyPanel2"></div>
+                                    <div id="buttonsPanel3"></div>
+                                    <div id="bodyPanel3">
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="tab7_3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ModelFooter7" class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- END PRELOADER -->
+<a href="#" class="scrollup"><i class="fa fa-angle-up"></i></a>
+<iframe id="frame1" style="display:none"></iframe>
+<script src="assets/plugins/jquery/jquery-1.11.1.min.js"></script>
+<script src="assets/plugins/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script src="assets/plugins/jquery-ui/jquery-ui-1.11.2.min.js"></script>
+<script src="assets/plugins/gsap/main-gsap.min.js"></script>
+<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/plugins/jquery-cookies/jquery.cookies.min.js"></script>
+<!-- Jquery Cookies, for theme -->
+<script src="assets/plugins/jquery-block-ui/jquery.blockUI.min.js"></script>
+<!-- simulate synchronous behavior when using AJAX -->
+<script src="assets/plugins/translate/jqueryTranslator.min.js"></script>
+<!-- Translate Plugin with JSON data -->
+<script src="assets/plugins/bootbox/bootbox.min.js"></script>
+<!-- Modal with Validation -->
+<script src="assets/plugins/mcustom-scrollbar/jquery.mCustomScrollbar.concat.min.js"></script>
+<!-- Custom Scrollbar sidebar -->
+<script src="assets/plugins/bootstrap-dropdown/bootstrap-hover-dropdown.min.js"></script>
+<!-- Show Dropdown on Mouseover -->
+<script src="assets/plugins/charts-sparkline/sparkline.min.js"></script>
+<!-- Charts Sparkline -->
+<script src="assets/plugins/retina/retina.min.js"></script>
+<!-- Retina Display -->
+<script src="assets/plugins/select2/select2.min.js"></script>
+<!-- Select Inputs -->
+<script src="assets/plugins/icheck/icheck.min.js"></script>
+<!-- Checkbox & Radio Inputs -->
+<script src="assets/plugins/backstretch/backstretch.min.js"></script>
+<!-- Background Image -->
+<script src="assets/plugins/bootstrap-progressbar/bootstrap-progressbar.min.js"></script>
+<!-- Animated Progress Bar -->
+<script src="assets/plugins/charts-chartjs/Chart.min.js"></script>
+
+<script src="assets/js/builder.js"></script>
+<!-- Theme Builder -->
+<script src="assets/js/sidebar_hover.js"></script>
+<!-- Sidebar on Hover -->
+<script src="assets/js/application.js"></script>
+<!-- Main Application Script -->
+<script src="assets/js/plugins.js"></script>
+<!-- Main Plugin Initialization Script -->
+<script src="assets/js/widgets/notes.js"></script>
+<script src="assets/js/Chart.js"></script>
+<script src="assets/js/jquery.noty.js"></script>
+
+<script src="assets/plugins/charts-highstock/js/highstock.js"></script>
+<!-- Notes Widget -->
+
+<script src="assets/js/rivets.bundled.min.js"></script>
+<script src="assets/js/moment-with-locales.min.js"></script>
+<script src="assets/js/papaparse/papaparse.js"></script>
+<script src="assets/plugins/maps-amcharts/ammap/ammap.js"></script>
+<script src="assets/plugins/maps-amcharts/ammap/exporting/filesaver.js"></script>
+<script src="assets/js/functions/moment-timezone-with-data.min.js"></script>
+<script src="assets/js/quickview.js"></script>
+<script src="assets/js/templates.js"></script>
+<script src="assets/js/jquery.jeditable.mini.js"></script>
+<script src="assets/js/jquery-ui.js"></script>
+<script src="assets/js/bootstrap-datetimepicker.min.js"></script>
+<script src="assets/plugins/jstree/jstree.min.js"></script>
+<script src="assets/js/widgets/prompt.js"></script>
+<script src="assets/js/widgets/editmodal.js"></script>
+<script src="assets/js/widgets/showModalWithTableInside.js"></script>
+<script src="assets/js/widgets/ColumnChart.js"></script>
+<script src="assets/js/widgets/buttonWithHandler.js"></script>
+<script src="assets/js/widgets/dynamicCreateForm.js"></script>
+<script src="assets/js/widgets/etapebiLoader.js"></script>
+<script src="assets/js/widgets/actionsLoader.js"></script>
+<script src="assets/js/widgets/expansesLoader.js"></script>
+<script src="assets/plugins/charts-highstock/js/modules/exporting.js"></script>
+
+<!--
+
+my functions start
+
+-->
+<script src="assets/js/functions/variables.js"></script>
+
+<script src="assets/js/functions/formats.js"></script>
+<script src="assets/js/functions/filials.js"></script>
+<script src="assets/js/functions/projects.js"></script>
+<script src="assets/js/functions/regions.js"></script>
+<script src="assets/js/functions/productrequests.js"></script>
+<script src="assets/js/functions/users.js"></script>
+<script src="assets/js/functions/acceptedproductrequests.js"></script>
+<script src="assets/js/functions/tender.js"></script>
+<script src="assets/js/functions/tenderwon.js"></script>
+<script src="assets/js/functions/mosatani.js"></script>
+<script src="assets/js/functions/requestsfromtenders.js"></script>
+<script src="assets/js/functions/elementTypes.js"></script>
+<script src="assets/js/functions/projecStageTypes.js"></script>
+<script src="assets/js/functions/prarabPageProjects.js"></script>
+<script src="assets/js/functions/Clients.js"></script>
+<script src="assets/js/functions/Loans.js"></script>
+<script src="assets/js/functions/LoanConditions.js"></script>
+<script src="assets/js/functions/Confiscated.js"></script>
+<script src="assets/js/functions/Dashboard.js"></script>
+<!--
+
+my functions end
+
+-->
+
+<script src="assets/js/functions.js"></script>
+<!-- Chat Script -->
+<!-- Search Script -->
+<!-- BEGIN PAGE SCRIPTS -->
+<script src="assets/plugins/datatables/jquery.dataTables.min.js"></script>
+<!-- Tables Filtering, Sorting & Editing -->
+<!-- END PAGE SCRIPTS -->
+<style>
+    .modal-backdrop.in {
+        opacity: 0;
+    }
+</style>
+</body>
+</html>

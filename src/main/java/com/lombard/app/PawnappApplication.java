@@ -18,21 +18,11 @@ import java.util.function.Consumer;
 import static com.lombard.app.StaticData.activeLoans;
 
 @SpringBootApplication
-public class PawnappApplication implements CommandLineRunner {
+public class PawnappApplication {
 
 	static ApplicationContext ctx;
 	public static void main(String[] args) {
 
 		ctx = SpringApplication.run(PawnappApplication.class, args);
-	}
-
-
-	@Autowired
-	private LoanRepo loanRepo;
-	@Autowired
-	private FilialRepository filialRepo;
-	@Override
-	public void run(String... args) throws Exception {
-
 	}
 }
