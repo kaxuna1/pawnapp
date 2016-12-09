@@ -3,6 +3,8 @@ package com.lombard.app.scheduledtasks;
 
 import com.lombard.app.Repositorys.FilialRepository;
 import com.lombard.app.Repositorys.Lombard.ClientsRepo;
+import com.lombard.app.Repositorys.Lombard.LoanInterestRepo;
+import com.lombard.app.Repositorys.Lombard.LoanPaymentRepo;
 import com.lombard.app.Repositorys.Lombard.LoanRepo;
 import com.lombard.app.StaticData;
 import com.lombard.app.models.Filial;
@@ -21,8 +23,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 
-
-
 import java.lang.management.MemoryUsage;
 import java.util.*;
 import java.util.function.Predicate;
@@ -39,7 +39,8 @@ public class ScheduledTasks {
 
     @Scheduled(cron = "* * * * * *")
     public void calculatePercentsForLoans() {
-
+        if(!staticReposReady)
+            return;
         Calendar cal = Calendar.getInstance(); // locale-specific
         cal.setTime(new Date());
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -62,13 +63,18 @@ public class ScheduledTasks {
     }
 
     private boolean runOnce = true;
+    private boolean staticReposReady = false;
 
 
     @Transactional
     @Scheduled(cron = "* * * * * *")
     public void initData() {
         if (runOnce) {
-            StaticData.clientsRepo=this.clientsRepo;
+            StaticData.clientsRepo = this.clientsRepo;
+            StaticData.loanRepo = this.loanRepo;
+            StaticData.loanInterestRepo = this.loanInterestRepo;
+            StaticData.loanPaymentRepo = this.loanPaymentRepo;
+            staticReposReady = true;
             runOnce = false;
             filialRepository.findAll().stream().filter(Filial::isActive)
                     .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
@@ -80,6 +86,8 @@ public class ScheduledTasks {
     @Transactional
     @Scheduled(cron = "* * * * * *")
     public void calculateOverDue() {
+        if(!staticReposReady)
+            return;
         Calendar cal = Calendar.getInstance(); // locale-specific
         cal.setTime(new Date());
         cal.setTimeZone(TimeZone.getTimeZone("Asia/Tbilisi"));
@@ -107,4 +115,8 @@ public class ScheduledTasks {
     private FilialRepository filialRepository;
     @Autowired
     private ClientsRepo clientsRepo;
+    @Autowired
+    private LoanPaymentRepo loanPaymentRepo;
+    @Autowired
+    private LoanInterestRepo loanInterestRepo;
 }

@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -104,8 +105,35 @@ public class MobilePhoneController {
     @ResponseBody
     public Page<Uzrunvelyofa> getConfiscated(@CookieValue("projectSessionId") long sessionId,
                                              @RequestParam(value = "index", required = true, defaultValue = "0") int index,
-                                             @RequestParam(value = "search", required = true, defaultValue = "") String search){
-        return uzrunvelyofaRepo.findForFilial(search, UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(),sessionRepository.findOne(sessionId).getUser().getFilial(),constructPageSpecification(index));
+                                             @RequestParam(value = "search", required = true, defaultValue = "") String search,
+                                             @RequestParam(value = "datvirtuli", required = true, defaultValue = "false") boolean datvirtuli,
+                                             @RequestParam(value = "dakavebuli", required = true, defaultValue = "false") boolean dakavebuli,
+                                             @RequestParam(value = "gasayidi", required = true, defaultValue = "false") boolean gasayidi,
+                                             @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli){
+        List<Integer> statuses= new ArrayList<>();
+
+        if(datvirtuli)
+            statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+        if(dakavebuli)
+            statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
+        if(gasayidi)
+            statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
+        if(gayiduli)
+            statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
+
+
+
+        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli){
+            statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+        }
+
+
+        return uzrunvelyofaRepo.findForFilial(search,
+                UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(),
+                sessionRepository.findOne(sessionId).getUser().getFilial(),statuses,constructPageSpecification(index));
     }
 
 

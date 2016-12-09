@@ -310,9 +310,13 @@ $(document).ready(function () {
             '<a href="#">' +
             '<i class="fa fa-balance-scale" aria-hidden="true"></i> ' +
             '<span style="font-family: font1;" data-translate="სესხები">სესხები</span></a></li>');
+
+
         navigation.append('<li id="loadConfiscatedButton" class="k">' +
             '<a href="#"><i class="fa fa-mobile" aria-hidden="true"></i>' +
-            '<span style="font-family: font1;" data-translate=" დაკავებული ნივთები"> დაკავებული ნივთები</span></a></li>');
+            '<span style="font-family: font1;" data-translate=" საწყობი">საწყობი</span></a></li>');
+
+
         navigation.append('<li id="loadConditionsButton" class="k">' +
             '<a href="#"><i class="fa fa-percent" aria-hidden="true"></i>' +
             '<span style="font-family: font1;" data-translate=" განაკვეთები"> განაკვეთები</span></a></li>');

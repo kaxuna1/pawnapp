@@ -1,6 +1,9 @@
 package com.lombard.app;
 
 import com.lombard.app.Repositorys.Lombard.ClientsRepo;
+import com.lombard.app.Repositorys.Lombard.LoanInterestRepo;
+import com.lombard.app.Repositorys.Lombard.LoanPaymentRepo;
+import com.lombard.app.Repositorys.Lombard.LoanRepo;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
@@ -35,8 +38,11 @@ public class StaticData {
     public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanInterest>>>>>
             activeInterests = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanInterest>>>>>();
     public static HashMap<Long, HashMap<Long, Loan>> clientsToLoansMap = new HashMap<Long, HashMap<Long, Loan>>();
-    @Autowired
+
     public static ClientsRepo clientsRepo;
+    public static LoanRepo loanRepo;
+    public static LoanPaymentRepo loanPaymentRepo;
+    public static LoanInterestRepo loanInterestRepo;
 
     public synchronized static void mapLoan(Loan loan) {
         DateTime dateTime = new DateTime(loan.getCreateDate().getTime());
