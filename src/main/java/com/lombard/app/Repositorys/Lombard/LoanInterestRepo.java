@@ -3,7 +3,6 @@ package com.lombard.app.Repositorys.Lombard;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Client;
 import com.lombard.app.models.Lombard.LoanInterest;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -3,12 +3,8 @@ package com.lombard.app.Repositorys.Lombard;
 
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Client;
-import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanPayment;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
