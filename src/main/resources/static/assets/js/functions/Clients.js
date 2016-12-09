@@ -123,7 +123,7 @@ function loadClientsData(index, search) {
 }
 openUserGlobal = function (currentElement) {
     showModalWithTableInside(function (head, body, modal) {
-        body.html(clientProfiletemplate);
+        body.html(clientProfileTemplate);
         var loansDiv = $("#tab5_1");
         var graphsDiv = $("#tab5_2");
         var paymentsDiv = $("#tab5_3");
@@ -147,11 +147,15 @@ openUserGlobal = function (currentElement) {
         loansDiv.append(clPaginationTemplate);
         uzrunvelyofaDiv.append(clientProfileUzrunvelyofasTemplate);
         uzrunvelyofaDiv.append(clientProfileUzrunvelyofasPaginationTemplate);
+        paymentsDiv.append(clientProfilePaymentsTemplate);
+        paymentsDiv.append(clientProfilePaymentsPaginationTemplate);
         var clPagination = $("#cLPagination");
         var loansDataTable = $("#clientLoansDataTable");
         var loansDataTableBody = $("#clientLoansDataTableBody");
         var clUzPagination = $("#cLUzPagination");
         var clientUzrunvelyofaDataTableBody = $("#clientUzrunvelyofaDataTableBody");
+        var clientPaymentDataTableBody = $("#clientPaymentDataTableBody");
+        var cLPzPagination = $("#cLPzPagination");
         var DOMElements = {
             loansDataTable: loansDataTable,
             loansDataTableBody: loansDataTableBody,
@@ -160,10 +164,14 @@ openUserGlobal = function (currentElement) {
             actionsDiv: actionsDiv,
             infoDiv: infoDiv,
             clUzPagination: clUzPagination,
-            clientUzrunvelyofaDataTableBody: clientUzrunvelyofaDataTableBody
+            clientUzrunvelyofaDataTableBody: clientUzrunvelyofaDataTableBody,
+            paymentsDiv: paymentsDiv,
+            clientPaymentDataTableBody: clientPaymentDataTableBody,
+            cLPzPagination: cLPzPagination
         };
         loadClientLoansToDiv(DOMElements, currentElement.id, 0);
         loadClientUzToDiv(DOMElements, currentElement.id, 0);
+        loadClientPaymentsToDiv(DOMElements, currentElement.id, 0);
         initClientActionsButtons(DOMElements, currentElement);
         initClientInfo(DOMElements, currentElement);
         head.html("");
@@ -180,7 +188,7 @@ openUserGlobal = function (currentElement) {
 };
 function initClientInfo(DOMElements, currentElement) {
     DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>სახელი:</div> " +
-        "<div class='col-md-4'>" +
+        "<div class='col-md-7'>" +
         currentElement.name +
         "</div>" +
         "</div>")
@@ -190,15 +198,37 @@ function initClientInfo(DOMElements, currentElement) {
         "</div>" +
         "</div>")
     DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პ/ნ: </div>" +
-        "<div class='col-md-4'>" +
+        "<div class='col-md-7'>" +
         currentElement.personalNumber +
         "</div>" +
         "</div>")
     DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>მობილური: </div>" +
-        "<div class='col-md-4'>" +
+        "<div class='col-md-7'>" +
         currentElement.mobile + "" +
         "</div>" +
         "</div>")
+    $.getJSON("/getClientProfileInfo/"+currentElement.id, function (result) {
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>სესხები: </div>" +
+            "<div class='col-md-7'>" +
+            result.loanSum + " ლარი" +
+            "</div>" +
+            "</div>");
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პროცენტები: </div>" +
+            "<div class='col-md-7'>" +
+            result.interestsSum + " ლარი" +
+            "</div>" +
+            "</div>");
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>გადახდები: </div>" +
+            "<div class='col-md-7'>" +
+            result.paymentsSum + " ლარი" +
+            "</div>" +
+            "</div>");
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პირველი სესხი: </div>" +
+            "<div class='col-md-7'>" +
+            moment(new Date(result.firstLoan)).locale("ka").format("L") + " ლარი" +
+            "</div>" +
+            "</div>");
+    });
 }
 function initClientActionsButtons(DOMElements2, currentElement) {
     DOMElements2.actionsDiv.append('<div style=" text-align: center;" class="row">' +
@@ -276,13 +306,14 @@ function loadClientLoansToDiv(DOMElements, id, page) {
 
             DOMElements.loansDataTableBody.append("<tr class='" + (currentElement.status === 4 ? "danger" : "") + "'>" +
                 "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + itemLogos + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + '<i class="fa fa-balance-scale" aria-hidden="true"></i> ' + currentElement["number"] + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'><img style='height: 15px;padding-bottom: 4px;;' src='assets/images/lari.png'>" + currentElement["loanSum"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + '<i class="fa fa-balance-scale" aria-hidden="true"></i>'
+                + currentElement["number"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'><img style='height: 15px;padding-bottom: 4px;;' src='assets/images/lari.png'>" +
+                currentElement["loanSum"] + "</td>" +
                 "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" +
-                '<i class="fa fa-calendar" aria-hidden="true"></i>' +
-                (currentElement.closed ? moment(new Date(currentElement["closeDate"])).locale("ka").format("L")
-                    : moment(new Date(currentElement["nextPaymentDate"])).locale("ka").format("L")) + "</td>" +
-                "<td><a value='" + currentElement['id'] + "' class='loanActionButton' href='#'> " +
+
+                (currentElement.closed ? "დახურული " : '<i class="fa fa-calendar" aria-hidden="true"></i>' +
+                moment(new Date(currentElement["nextPaymentDate"])).locale("ka").format("L")) + "</td>" +
                 "<i class='fa fa-bars' aria-hidden='true'></i></a></td>" +
                 "</tr>");
         }
@@ -312,7 +343,6 @@ function loadClientLoansToDiv(DOMElements, id, page) {
 
     }, {})
 }
-
 function loadClientUzToDiv(DOMElements, id, page) {
     $.getJSON("getClientUzrunvelyofa/" + id + "/" + page, function (result) {
         DOMElements.clientUzrunvelyofaDataTableBody.html("");
@@ -327,19 +357,20 @@ function loadClientUzToDiv(DOMElements, id, page) {
             var type = ""
             if (currentElement.type === 3) {
                 type += "<img style='height: 20px' src='assets/images/gold.png' />";
-                name += "<span style='font-family: font1;'>"+currentElement.name+" სინჯი: "+
-                    currentElement.sinji.name+" "+currentElement.mass +" გრამი</span>";
+                name += "<span style='font-family: font1;'>" + currentElement.name + " სინჯი: " +
+                    currentElement.sinji.name + " " + currentElement.mass + " გრამი</span>";
             }
             if (currentElement.type === 1) {
                 type += "<img style='height: 20px' src='assets/images/phone.png' />";
-                name += "<span style='font-family: font1;'>მობილური: "+currentElement.brand.name+" "+
-                    currentElement.model+" imei:"+currentElement.imei+"</span>";
+                name += "<span style='font-family: font1;'>" + currentElement.brand.name + " " +
+                    currentElement.model + " imei:" + currentElement.imei + "</span>";
             }
-            if (currentElement.type=== 2) {
+            if (currentElement.type === 2) {
                 type += "<img style='height: 20px' src='assets/images/lap.png' />";
-                name += "<span style='font-family: font1;'>კომპ: "+currentElement.brandName+" "+
-                    currentElement.modelName+"</span>";name += "<span style='font-family: font1;'>მობილური: "+currentElement.brandName+" "+
-                    currentElement.modelName+"</span>";
+                name += "<span style='font-family: font1;'>კომპ: " + currentElement.brandName + " " +
+                    currentElement.modelName + "</span>";
+                name += "<span style='font-family: font1;'>მობილური: " + currentElement.brandName + " " +
+                    currentElement.modelName + "</span>";
             }
             if (currentElement.type === 4) {
                 type += "<img style='height: 20px' src='assets/images/homeTech.png' />";
@@ -347,10 +378,10 @@ function loadClientUzToDiv(DOMElements, id, page) {
             console.log(currentElement["createDate"]);
 
             DOMElements.clientUzrunvelyofaDataTableBody.append("<tr>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + type +" "+ name+ "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + type + " " + name + "</td>" +
                 "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + currentElement["number"] + "</td>" +
                 "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + currentElement["sum"] + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>"  + loanStatuses[currentElement["status"]] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + loanStatuses[currentElement["status"]] + "</td>" +
                 "</tr>");
         }
         var gridRow = $('.gridRowClient');
@@ -360,7 +391,6 @@ function loadClientUzToDiv(DOMElements, id, page) {
             var currentElement = dataArray[$(this).attr("value")];
             console.log($(this).attr("value"));
 
-            openLoanGlobal(currentElement);
             DOMElements.modal.modal("hide");
         });
         DOMElements.clUzPagination.html("");
@@ -378,4 +408,50 @@ function loadClientUzToDiv(DOMElements, id, page) {
 
 
     }, {})
+}
+function loadClientPaymentsToDiv(DOMElements, id, page) {
+    $.getJSON("getClientPayments/" + id + "/" + page, function (result) {
+        var dataArray = result["content"];
+        var totalPages = result["totalPages"];
+        var totalElements = result["totalElements"];
+
+        for (var i = 0; i < dataArray.length; i++) {
+            var currentElement = dataArray[i];
+
+            DOMElements.clientPaymentDataTableBody.append("<tr>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowPayment'>" +
+                moment(new Date(currentElement["createDate"])).locale("ka").format("L") + " </td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowPayment'>" + currentElement["sum"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowPayment'>" + currentElement["loanNumber"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowPayment'>" + paymentTypes[currentElement["type"]] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowPayment'>" + currentElement["usedSum"] + "</td>" +
+                "</tr>"
+            )
+            ;
+        }
+        var gridRow = $('.gridRowPayment');
+        gridRow.css('cursor', 'pointer');
+        gridRow.unbind();
+        gridRow.click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            console.log($(this).attr("value"));
+
+
+            DOMElements.modal.modal("hide");
+        });
+        DOMElements.cLPzPagination.html("");
+        for (i = 0; i < totalPages; i++) {
+            if (i > page - 3 && i < page + 3 || i === 0 || i === (totalPages - 1))
+                DOMElements.cLPzPagination.append('<li value="' + i + '" class="paginate_button paginate_button3' + (page == i ? 'active"' : '') + '"><a href="#">' + (i + 1) + '</a></li>');
+
+        }
+        $(".paginate_button3").click(function () {
+            //console.log($(this).val())
+            currentPage = $(this).val();
+            loadClientPaymentsToDiv(DOMElements, id, currentPage)
+
+        });
+
+
+    })
 }

@@ -29,7 +29,8 @@ public interface ClientsRepo extends JpaRepository<Client, Long> {
             "and (c.personalNumber LIKE CONCAT('%',:search,'%') " +
             "or c.name LIKE CONCAT('%',:search,'%') " +
             "or c.surname LIKE CONCAT('%',:search,'%') " +
-            "or c.mobile LIKE CONCAT('%',:search,'%')) " +
+            "or c.mobile LIKE CONCAT('%',:search,'%') " +
+            "or (l in (select l from l where l.isActive=true and (l.number like CONCAT('%',:search,'%'))))) " +
             "group by (l.id)" +
             "order by count (l.id)")
     Page<Client> findByFlaged(@Param("search") String search,

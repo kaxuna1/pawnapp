@@ -230,10 +230,10 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
 
 
         return mapOf(
-                "loans" to loanRepo.loansToday(session.user.filial, from, to),
-                "interestsMade" to interestsRepo.interestsTodayMade(session.user.filial, from, to),
-                "interestsPay" to interestsRepo.interestsTodayPay(session.user.filial, from, to),
-                "payments" to paymentRepo.payedToday(session.user.filial, from, to))
+                "loans" to (loanRepo.loansToday(session.user.filial, from, to) ?: 0),
+                "interestsMade" to (interestsRepo.interestsTodayMade(session.user.filial, from, to) ?: 0),
+                "interestsPay" to (interestsRepo.interestsTodayPay(session.user.filial, from, to) ?: 0),
+                "payments" to (paymentRepo.payedToday(session.user.filial, from, to) ?: 0))
     }
 
     @GetMapping("/getTodayPayLoans")
@@ -269,6 +269,32 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         else
             return null
     }
+
+    @GetMapping("/getClientPayments/{id}/{page}")
+    fun getClientPayments(@PathVariable("id") id: Long,
+                          @PathVariable("page") page: Int,
+                          @CookieValue("projectSessionId") sessionId: Long): Any? {
+        val session = sessionRepo.findOne(sessionId)
+        val client = clientsRepo.findOne(id)
+        if (session.user.filial.id == client.filial.id)
+            return paymentRepo.findClientPayments(client, constructPageSpecification(pageIndex = page, size = 10))
+        else
+            return null
+    }
+
+    @GetMapping("/getClientProfileInfo/{id}")
+    fun getClientProfileInfo(@PathVariable("id") id: Long,
+                             @CookieValue("projectSessionId") sessionId: Long): Any {
+        val session = sessionRepo.findOne(sessionId)
+        val client = clientsRepo.findOne(id)
+        return mapOf(
+                "loanSum" to (loanRepo.clientLoanSum(client) ?: 0),
+                "interestsSum" to (interestsRepo.clientInterest(client) ?: 0),
+                "paymentsSum" to (paymentRepo.clientPayments(client) ?: 0),
+                "firstLoan" to (loanRepo.findFirstByClientAndIsActiveOrderByCreateDateAsc(client,true).createDate)
+        )
+    }
+
 
     private fun constructPageSpecification(pageIndex: Int, size: Int): Pageable {
         return PageRequest(pageIndex, size)

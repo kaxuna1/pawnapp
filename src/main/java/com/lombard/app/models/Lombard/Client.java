@@ -1,6 +1,7 @@
 package com.lombard.app.models.Lombard;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.lombard.app.StaticData;
@@ -23,6 +24,7 @@ import java.util.*;
         @Index(name = "surNameIndex", columnList = "surname"),
         @Index(name = "filialIndex", columnList = "filialId")
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -48,9 +50,6 @@ public class Client {
     @Column
     private String number;
 
-    @Column
-    private String k;
-
     @ManyToOne
     @JoinColumn(name = "filialId")
     @JsonIgnore
@@ -60,7 +59,7 @@ public class Client {
     private Date createDate;
 
     @Column
-    private boolean isActive;
+    private Boolean isActive;
 
     public Client(String name, String surname, String personalNumber, String mobile, Filial filial) {
         this.name = name;

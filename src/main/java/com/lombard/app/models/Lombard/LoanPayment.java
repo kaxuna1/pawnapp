@@ -144,4 +144,8 @@ public class LoanPayment {
     public void addToUsedSum(float val) {
         this.usedSum+=val;
     }
+
+    public String getLoanNumber(){
+        return loan.getNumber();
+    }
 }

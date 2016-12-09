@@ -19,6 +19,7 @@ import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
+import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement;
 import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes;
 import com.lombard.app.models.Lombard.TypeEnums.MovementTypes;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
@@ -232,7 +233,7 @@ public class LoanController {
         }
 
         return loanRepo.
-                findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc(clientsRepo.getOne(id), true,statuses, constructPageSpecification(page, 10));
+                findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc(clientsRepo.getOne(id), true, statuses, constructPageSpecification(page, 10));
     }
 
     @RequestMapping("/createloan")
@@ -423,9 +424,7 @@ public class LoanController {
                         loanMovementsRepo.save(loanMovement);
                         loan.addFirstInterest();
                         loanRepo.save(loan);
-                        synchronized (this) {
 
-                        }
 
                         log.info("submited " + client.getId() + "" + i);
                     }
@@ -473,9 +472,14 @@ public class LoanController {
         Loan loan = loanRepo.findOne(id);
         if (session.isIsactive() &&
                 loan.getFilial().getId() == session.getUser().getFilial().getId() &&
-                loan.isOverdue()) {
+                loan.getStatus() == LoanStatusTypes.PAYMENT_LATE.getCODE()) {
             try {
                 loan.confiscateAndCloseLoan();
+                for (Uzrunvelyofa u : loan.getUzrunvelyofas()) {
+                    u.setStatus(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
+                    u.getUzrunvelyofaMovements().add(new UzrunvelyofaMovement("დაკავდა ნივთი გადაუხდელობის გამო", UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE(), u));
+                    uzrunvelyofaRepo.save(u);
+                }
                 loanRepo.save(loan);
 
                 return new JsonMessage(JsonReturnCodes.Ok.getCODE(),

@@ -4,6 +4,9 @@ package com.lombard.app.Repositorys.Lombard;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Client;
 import com.lombard.app.models.Lombard.Loan;
+import com.lombard.app.models.UserManagement.User;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -68,7 +71,7 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
 
     @Query("select sum (l.loanSum) from Loan l where (l.createDate between :from and :to ) and l.filial=:filial and l.isActive=true")
-    float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
+    Float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
 
     @Query("select l from Loan l " +
             "join l.loanInterests p " +
@@ -88,4 +91,9 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
 
 
     Page<Loan> findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc( Client client,  boolean isActive, List<Integer> statuses, Pageable pageable);
+
+    @Query("select sum (l.loanSum) from Loan l where l.client=:client and l.isActive=true")
+    Float clientLoanSum(@Param("client")Client client);
+
+    Loan findFirstByClientAndIsActiveOrderByCreateDateAsc(Client client,boolean isActive);
 }

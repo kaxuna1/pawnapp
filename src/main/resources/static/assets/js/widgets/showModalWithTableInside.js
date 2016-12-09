@@ -5,10 +5,10 @@ function showModalWithTableInside(callback,callbacks,width) {
     if(!width)
         width=600
     var random=Math.floor((Math.random() * 10000) + 1);
-
+    /*style="width: '+width+'px"*/
     var popupTemplate =
         '<div id="promptModal'+random+ '" class="modal fade">' +
-        '  <div style="width: '+width+'px" class="modal-dialog">' +
+        '  <div id="promptModal'+random+ 'Dialog"  class="modal-dialog">' +
         '    <div class="modal-content">' +
         '      <div class="modal-header">' +
         '        <button type="button" class="close" data-dismiss="modal">&times;</button>' +
@@ -22,6 +22,11 @@ function showModalWithTableInside(callback,callbacks,width) {
         '    </div>' +
         '  </div>' +
         '</div>';
+    "@media only screen and (max-device-width: 480px)"
+    document.querySelector('style').textContent +=
+        "@media screen and (min-width:"+width+"px) { #promptModal"+random+ "Dialog { width: "+width+"px; }}"
+    document.querySelector('style').textContent +=
+        "@media screen and (max-width:"+width+"px) { #promptModal"+random+ "Dialog { width: 100%; }}"
 
     var thisModal = $(popupTemplate).modal("show").on('hidden.bs.modal', function () {
         $("#promptModal"+random).remove();

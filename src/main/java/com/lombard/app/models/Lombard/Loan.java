@@ -42,7 +42,6 @@ public class Loan {
 
     @ManyToOne
     @JoinColumn(name = "clientId")
-    @JsonIgnore
     private Client client;
 
 
@@ -524,7 +523,6 @@ public class Loan {
         LoanMovement loanMovement = new LoanMovement("სესხი დაიხურა ნივთების კონფიკაციით.", MovementTypes.LOAN_CLOSED.getCODE(), this);
         this.movements.add(loanMovement);
         this.closed = true;
-        uzrunvelyofas.forEach(Uzrunvelyofa::confiscate);
         this.status= LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE();
         this.closeDate = new Date();
     }

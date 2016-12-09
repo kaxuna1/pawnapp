@@ -158,19 +158,27 @@ function loansGivenToday() {
         "&end=" +
         moment(moment(new Date()).locale("ka").format("YYYY-MM-DD"), "YYYY-MM-DD") +
         "&search=", function (result) {
-
+        $("#curLoansDataTable").dataTable().fnDestroy();
         var dataArray = result["content"];
         for(key in dataArray){
             var currentElement = dataArray[key];
             $("#loansTodayDataTable").append(
                 "<tr class='gridRow'>" +
-                "<td>"+currentElement["number"]+"</td>" +
-                "<td>"+currentElement["clientFullName"]+"</td>" +
+                "<td><a href='#' value='"+key+"' class='loanClickRow2'>"+currentElement["number"]+"</a></td>" +
+                "<td><a href='#' value='"+key+"' class='loanClickRowUser2'>"+currentElement["clientFullName"]+"</a></td>" +
                 "<td>"+currentElement["loanSum"]+"</td>" +
                 "</tr>"
             )
         }
-        $("#curLoansDataTable").dataTable().fnDestroy();
+        $('.loanClickRow2').click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            openLoanGlobal(currentElement);
+        });
+        $('.loanClickRowUser2').click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            openUserGlobal(currentElement.client);
+        });
+
         $("#curLoansDataTable").removeClass("no-footer");
         tableDynamicById("curLoansDataTable");
         inputSelect();
@@ -184,18 +192,27 @@ function loansToPayToday(){
     $("#loansToPayDataTable").html("");
     $.getJSON("/getTodayPayLoans", function (result) {
 
+        $("#curLoansToPayDataTable").dataTable().fnDestroy();
+        $("#loansToPayDataTable").html("");
         var dataArray = result;
         for(var key2 in dataArray){
             var currentElement = dataArray[key2];
             $("#loansToPayDataTable").append(
-                "<tr class='gridRow'>" +
-                "<td>"+currentElement["number"]+"</td>" +
-                "<td>"+currentElement["clientFullName"]+"</td>" +
+                "<tr>" +
+                "<td><a href='#' value='"+key2+"' class='loanClickRow'>"+currentElement["number"]+"</a></td>" +
+                "<td><a href='#' value='"+key2+"' class='loanClickRowUser'>"+currentElement["clientFullName"]+"</a></td>" +
                 "<td>"+currentElement["interestSumLeft"]+"</td>" +
                 "</tr>"
             )
         }
-        $("#curLoansToPayDataTable").dataTable().fnDestroy();
+        $('.loanClickRow').click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            openLoanGlobal(currentElement);
+        });
+        $('.loanClickRowUser').click(function () {
+            var currentElement = dataArray[$(this).attr("value")];
+            openUserGlobal(currentElement.client);
+        });
         $("#curLoansToPayDataTable").removeClass("no-footer");
         tableDynamicById("curLoansToPayDataTable");
         inputSelect();

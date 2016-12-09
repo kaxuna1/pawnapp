@@ -66,22 +66,22 @@ function loadLoansData(index, search, noAnimation) {
             for (i = 0; i < dataArray.length; i++) {
                 var currentElement = dataArray[i];
                 console.log(new Date(currentElement["createDate"]));
-                var itemLogos="";
-                for(typeKey in currentElement.loanUzrunvelyofaTypes){
-                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===3)
-                        itemLogos+="<img style='height: 20px' src='assets/images/gold.png' />";
-                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===1)
-                        itemLogos+="<img style='height: 20px' src='assets/images/phone.png' />";
-                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===2)
-                        itemLogos+="<img style='height: 20px' src='assets/images/lap.png' />";
-                    if(currentElement.loanUzrunvelyofaTypes[typeKey]===4)
-                        itemLogos+="<img style='height: 20px' src='assets/images/homeTech.png' />";
+                var itemLogos = "";
+                for (typeKey in currentElement.loanUzrunvelyofaTypes) {
+                    if (currentElement.loanUzrunvelyofaTypes[typeKey] === 3)
+                        itemLogos += "<img style='height: 20px' src='assets/images/gold.png' />";
+                    if (currentElement.loanUzrunvelyofaTypes[typeKey] === 1)
+                        itemLogos += "<img style='height: 20px' src='assets/images/phone.png' />";
+                    if (currentElement.loanUzrunvelyofaTypes[typeKey] === 2)
+                        itemLogos += "<img style='height: 20px' src='assets/images/lap.png' />";
+                    if (currentElement.loanUzrunvelyofaTypes[typeKey] === 4)
+                        itemLogos += "<img style='height: 20px' src='assets/images/homeTech.png' />";
                 }
                 console.log(currentElement["createDate"]);
 
                 $("#dataGridBody").append("<tr class='" + (currentElement.status === 4 ? "danger" : "") + "'>" +
                     "<td><input value='" + currentElement["id"] + "' class='checkboxParcel' type='checkbox' /></td>" +
-                    "<td style='font-family: font1;' value='" + i + "' class='gridRow'>"  + itemLogos + "</td>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" + itemLogos + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" + '<i class="fa fa-balance-scale" aria-hidden="true"></i> ' + currentElement["number"] + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" + '<i class="fa fa-user-circle-o" aria-hidden="true"></i> ' + currentElement["clientFullName"] + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'><img style='height: 15px;padding-bottom: 4px;;' src='assets/images/lari.png'>" + currentElement["loanSum"] + "</td>" +
@@ -451,7 +451,7 @@ function drawUzrunvelyofaGrid(DOMElements) {
         DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
             '<div class="media">' +
             '   <div class="media-body">' +
-            '   <div style="width: 22%;margin-left: 17px;" class="sender">'+element.name+' ' + homeTechBrands[element.brand] + " " + element.model + '</div>' +
+            '   <div style="width: 22%;margin-left: 17px;" class="sender">' + element.name + ' ' + homeTechBrands[element.brand] + " " + element.model + '</div>' +
             '<div style="width: 70%;" class="subject">' + statusString + '<span type="homeTech" value="' + key + '" class="remove-uzrunvelyofa label label-danger">X</span></div>' +
             '</div>' +
             '</div>' +
@@ -465,9 +465,9 @@ function drawUzrunvelyofaGrid(DOMElements) {
             delete data[key];
         if (type === "laptop")
             delete lapData[key];
-        if(type==="gold")
+        if (type === "gold")
             delete goldData[key];
-        if(type==="homeTech")
+        if (type === "homeTech")
             delete homeTechData[key];
         updateSideInfo(DOMElements);
         drawUzrunvelyofaGrid(DOMElements);
@@ -708,7 +708,7 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
         DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
             '<div class="media">' +
             '   <div class="media-body">' +
-            '   <div style="width: 42%;margin-left: 17px;" class="sender">'+element.name+' ' + element.brand.name + " " + element.model + '</div>' +
+            '   <div style="width: 42%;margin-left: 17px;" class="sender">' + element.name + ' ' + element.brand.name + " " + element.model + '</div>' +
             '<div style="width: 50%;" class="subject">' + statusString + '</div>' +
             '</div>' +
             '</div>' +
@@ -789,8 +789,10 @@ function loadLoanDoActions(DOMElements) {
                 }, function () {
                     modal.modal("hide");
                     $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result) {
-                        if(currentPage===3)
-                        loadLoansData(indexG, searchG, true);
+                        if (currentPage === 3)
+                            loadLoansData(indexG, searchG, true);
+                        if (currentPage === 1)
+                            DashInit()
                         openLoanGlobal(result);
                     });
 
@@ -803,8 +805,8 @@ function loadLoanDoActions(DOMElements) {
         createButtonWithHandlerr(DOMElements.loanDoActionsDiv, "პროცენტის დაკისრება", function () {
             $.getJSON("/addInterestToLoan/" + DOMElements.currentObj.id, function (result) {
                 $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result2) {
-                    if(currentPage===3)
-                    loadLoansData(indexG, searchG, true);
+                    if (currentPage === 3)
+                        loadLoansData(indexG, searchG, true);
                     openLoanGlobal(result2);
                 });
             });
@@ -834,8 +836,8 @@ function loadLoanDoActions(DOMElements) {
                                         console.log(result);
                                         if (result.code === 0) {
                                             $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result2) {
-                                                if(currentPage===3)
-                                                loadLoansData(indexG, searchG, true);
+                                                if (currentPage === 3)
+                                                    loadLoansData(indexG, searchG, true);
                                                 openLoanGlobal(result2);
                                                 alert("გადახდა დაფიქსირდა წარმატებით!");
                                             });
