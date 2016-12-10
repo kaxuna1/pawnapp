@@ -187,45 +187,51 @@ openUserGlobal = function (currentElement) {
     }, 1024)
 };
 function initClientInfo(DOMElements, currentElement) {
-    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>სახელი:</div> " +
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>სახელი:</div> " +
         "<div class='col-md-7'>" +
         currentElement.name +
         "</div>" +
         "</div>")
-    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>გვარი: </div>" +
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>გვარი: </div>" +
         "<div class='col-md-4'>" + currentElement.surname +
 
         "</div>" +
         "</div>")
-    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პ/ნ: </div>" +
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>პ/ნ: </div>" +
         "<div class='col-md-7'>" +
         currentElement.personalNumber +
         "</div>" +
         "</div>")
-    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>მობილური: </div>" +
+    DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>მობილური: </div>" +
         "<div class='col-md-7'>" +
         currentElement.mobile + "" +
         "</div>" +
         "</div>")
     $.getJSON("/getClientProfileInfo/"+currentElement.id, function (result) {
-        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>სესხები: </div>" +
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>სესხები: </div>" +
             "<div class='col-md-7'>" +
             result.loanSum + " ლარი" +
             "</div>" +
             "</div>");
-        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პროცენტები: </div>" +
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>პროცენტები: </div>" +
             "<div class='col-md-7'>" +
             result.interestsSum + " ლარი" +
             "</div>" +
             "</div>");
-        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>გადახდები: </div>" +
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>გადაუხდელი: </div>" +
+            "<div class='col-md-7'>" +
+            result.unpaied + " ლარი" +
+            "</div>" +
+            "</div>");
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>გადახდები: </div>" +
             "<div class='col-md-7'>" +
             result.paymentsSum + " ლარი" +
             "</div>" +
             "</div>");
-        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-4'>პირველი სესხი: </div>" +
+        DOMElements.infoDiv.append("<div style='padding-left: 20px' class='row'><div class='col-md-5'>პირველი სესხი: </div>" +
             "<div class='col-md-7'>" +
-            moment(new Date(result.firstLoan)).locale("ka").format("L") + " ლარი" +
+            (result.firstLoan?
+            moment(new Date(result.firstLoan)).locale("ka").format("L"):"ჯერ არ გაცემულა.") +
             "</div>" +
             "</div>");
     });
@@ -378,13 +384,13 @@ function loadClientUzToDiv(DOMElements, id, page) {
             console.log(currentElement["createDate"]);
 
             DOMElements.clientUzrunvelyofaDataTableBody.append("<tr>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + type + " " + name + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + currentElement["number"] + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + currentElement["sum"] + "</td>" +
-                "<td style='font-family: font1;' value='" + i + "' class='gridRowClient'>" + loanStatuses[currentElement["status"]] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClientUz'>" + type + " " + name + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClientUz'>" + currentElement["number"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClientUz'>" + currentElement["sum"] + "</td>" +
+                "<td style='font-family: font1;' value='" + i + "' class='gridRowClientUz'>" + loanStatuses[currentElement["status"]] + "</td>" +
                 "</tr>");
         }
-        var gridRow = $('.gridRowClient');
+        var gridRow = $('.gridRowClientUz');
         gridRow.css('cursor', 'pointer');
         gridRow.unbind();
         gridRow.click(function () {

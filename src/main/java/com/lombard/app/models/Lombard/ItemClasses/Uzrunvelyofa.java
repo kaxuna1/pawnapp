@@ -2,6 +2,7 @@ package com.lombard.app.models.Lombard.ItemClasses;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lombard.app.StaticData;
 import com.lombard.app.models.Lombard.Dictionary.Brand;
 import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.Loan;
@@ -249,5 +250,19 @@ public class Uzrunvelyofa {
 
     public void setMass(Float mass) {
         this.mass = mass;
+    }
+
+    public Long getLoanId(){
+        return loan.getId();
+    }
+    public String getLoanNumber(){
+        return loan.getNumber();
+    }
+    public Float  getAddedSum(){
+        return StaticData.loanInterestRepo.findLoanInterestSum(this.loan);
+    }
+    public Float getPayedSum(){
+        Float loanPaymentSum = StaticData.loanPaymentRepo.findLoanPaymentSum(this.loan);
+        return loanPaymentSum==null?0:loanPaymentSum;
     }
 }

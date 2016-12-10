@@ -371,17 +371,17 @@ $(document).ready(function () {
             $("#searchparams").append('<div class="row">    ' +
                 '<div class="col-md-2">        ' +
                 '<label>' +
-                '<input id="closedParam" type="checkbox" data-checkbox="icheckbox_square-blue">დახურული</label>' +
+                '<input id="datvirtuliCheck" type="checkbox" data-checkbox="icheckbox_square-blue">დატვირთული</label>' +
                 '    </div>    <div class="col-md-2">        ' +
                 '<label>' +
-                '<input id="openedParam" type="checkbox" data-checkbox="icheckbox_square-blue">მიმდინარე' +
+                '<input id="confiscatedCheck" type="checkbox" data-checkbox="icheckbox_square-blue">დაკავებული' +
                 '</label>    ' +
                 '</div>    ' +
                 '<div class="col-md-2">        ' +
                 '<div class="input-group">' +
                 '<div class="icheck-list">' +
                 ' <label>' +
-                '<input id="lateParam" type="checkbox" data-checkbox="icheckbox_square-blue">დაგვიანებული' +
+                '<input id="forSaleCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გასაყიდად გაგზავნილი' +
                 '</label>            ' +
                 '</div>' +
                 '</div>' +
@@ -390,11 +390,20 @@ $(document).ready(function () {
                 '<div class="input-group">' +
                 '<div class="icheck-list">' +
                 ' <label>' +
-                '<input id="lateParam" type="checkbox" data-checkbox="icheckbox_square-blue">დაგვიანებული' +
+                '<input id="soldCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გაყიდული' +
                 '</label>            ' +
                 '</div>' +
                 '</div>' +
-                '</div></div>');
+                "</div>" +
+                '<div class="col-md-2">     ' +
+                '<div class="input-group">' +
+                '<div class="icheck-list">' +
+                ' <label>' +
+                '<input id="freeCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გათავისუფლებული' +
+                '</label>            ' +
+                '</div>' +
+                '</div>' +
+                '</div>');
             $('input').iCheck({
                 checkboxClass: 'icheckbox_minimal',
                 radioClass: 'iradio_minimal',

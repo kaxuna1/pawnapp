@@ -109,7 +109,8 @@ public class MobilePhoneController {
                                              @RequestParam(value = "datvirtuli", required = true, defaultValue = "false") boolean datvirtuli,
                                              @RequestParam(value = "dakavebuli", required = true, defaultValue = "false") boolean dakavebuli,
                                              @RequestParam(value = "gasayidi", required = true, defaultValue = "false") boolean gasayidi,
-                                             @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli){
+                                             @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli,
+                                             @RequestParam(value = "free", required = true, defaultValue = "false") boolean free){
         List<Integer> statuses= new ArrayList<>();
 
         if(datvirtuli)
@@ -120,10 +121,11 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
         if(gayiduli)
             statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
-
-
-
-        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli){
+        if(free) {
+            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
+        }
+        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli&&!free){
             statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());

@@ -78,20 +78,17 @@ public class ClientController {
                                    boolean flagged) {
         Session session = sessionRepository.findOne(sessionId);
         List<Integer> statuses = new ArrayList<>();
-        if(flagged){
+        if (flagged) {
             statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
             statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
-        }else{
-            statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
-            statuses.add(LoanStatusTypes.ACTIVE.getCODE());
-            statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
-            statuses.add(LoanStatusTypes.CLOSED_WITH_SUCCESS.getCODE());
+            return clientsRepo.findByFlaged(search,
+                    statuses,
+                    session.getUser().getFilial(),
+                    constructPageSpecification(index));
+        } else {
+            return clientsRepo.findForClientsPage(search,session.getUser().getFilial(),constructPageSpecification(index));
         }
-        return clientsRepo.findByFlaged(search,
-                statuses,
-                session.getUser().getFilial(),
-                constructPageSpecification(index));
-        }
+    }
 
 
     private Pageable constructPageSpecification(int pageIndex) {

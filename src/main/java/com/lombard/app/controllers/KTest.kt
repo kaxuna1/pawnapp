@@ -291,7 +291,8 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                 "loanSum" to (loanRepo.clientLoanSum(client) ?: 0),
                 "interestsSum" to (interestsRepo.clientInterest(client) ?: 0),
                 "paymentsSum" to (paymentRepo.clientPayments(client) ?: 0),
-                "firstLoan" to (loanRepo.findFirstByClientAndIsActiveOrderByCreateDateAsc(client,true).createDate)
+                "firstLoan" to ((loanRepo.findFirstByClientAndIsActiveOrderByCreateDateAsc(client,true)?.createDate)),
+                "unpaied" to (interestsRepo.getUnpaied(client.id)?:0)
         )
     }
 

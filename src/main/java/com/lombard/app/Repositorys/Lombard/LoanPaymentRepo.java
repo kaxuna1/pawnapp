@@ -38,4 +38,7 @@ public interface LoanPaymentRepo extends JpaRepository<LoanPayment, Long> {
     @Query("select sum (p.sum) from LoanPayment p join p.loan l where " +
             "l.client=:client and l.isActive=true and p.active=true")
     Integer clientPayments(@Param("client") Client client);
+
+    @Query(value = "select sum(lp.sum) from LoanPayment lp where lp.loan=:loan and lp.active=true")
+    Float findLoanPaymentSum(@Param("loan") Loan loan);
 }

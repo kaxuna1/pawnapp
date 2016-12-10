@@ -22,7 +22,7 @@ public interface ClientsRepo extends JpaRepository<Client, Long> {
                                                                                                  @Param("surname") String surname,
                                                                                                  @Param("personalNumber") String personalNumber,
                                                                                                  Pageable pageable);
-    @Query("select distinct c from Client c join c.loans l " +
+    @Query("select distinct c from Client c left join c.loans l " +
             "where (l in (select l from l where l.isActive=true and l.status in :statuses and (l.client.id = c.id))) " +
             "and c.filial = :filial " +
             "and c.isActive = true " +
@@ -35,6 +35,17 @@ public interface ClientsRepo extends JpaRepository<Client, Long> {
             "order by count (l.id)")
     Page<Client> findByFlaged(@Param("search") String search,
                               @Param("statuses") List<Integer> statuses,
+                              @Param("filial") Filial filial,
+                              Pageable pageable);
+    @Query("select distinct c from Client c " +
+            "where " +
+            "c.filial = :filial " +
+            "and c.isActive = true " +
+            "and (c.personalNumber LIKE CONCAT('%',:search,'%') " +
+            "or c.name LIKE CONCAT('%',:search,'%') " +
+            "or c.surname LIKE CONCAT('%',:search,'%') " +
+            "or c.mobile LIKE CONCAT('%',:search,'%')) ")
+    Page<Client> findForClientsPage(@Param("search") String search,
                               @Param("filial") Filial filial,
                               Pageable pageable);
 
