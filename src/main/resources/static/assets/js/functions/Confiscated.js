@@ -5,25 +5,22 @@ function loadConfiscatedData(index, search, noAnimation) {
 
     var dynamicFilters = addDynamicFilters($("#dynamicFilterRow").html(""),
         {
-            brand: {
-                name: "ბრენდი",
-                type: "comboBox",
-                valueField: "id",
-                nameField: "name",
-                url: "/getbrands/0",
-                handler: function () {
-                    dataLoading(0, search);
-                }
-            },
             type: {
                 name: "ტიპი",
                 type: "comboBox",
                 valueField: "id",
                 nameField: "name",
                 handler: function (newVal) {
-
                     console.log(newVal);
                     dataLoading(0, search);
+                    if (newVal === 3) {
+                        dynamicFilters.sinji.show();
+                        dynamicFilters.name.show();
+                    }
+                    if (newVal === 1 || newVal === 2) {
+                        dynamicFilters.brand.show();
+                        dynamicFilters.model.show();
+                    }
 
                 },
                 data: [
@@ -33,6 +30,16 @@ function loadConfiscatedData(index, search, noAnimation) {
                     {id: "4", name: "საოჟახო ტექნიკა"},
                     {id: "5", name: "სხვა"}
                 ]
+            },
+            brand: {
+                name: "ბრენდი",
+                type: "comboBox",
+                valueField: "id",
+                nameField: "name",
+                url: "/getbrands/0",
+                handler: function () {
+                    dataLoading(0, search);
+                }
             },
             sinji: {
                 name: "სინჯი",

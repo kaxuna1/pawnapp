@@ -17,12 +17,11 @@ function addDynamicFilters(div,data){
         console.log(element);
         if (element.type === "text") {
 
-            div.append('<div class="col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
+            div.append('<div class="filterCol col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
                 "<input class='form-control' type='text' placeholder='" + element.name + "' value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "' />" +
                 "</div></div>")
-            var obj = $("#" + key + random);
-            returnObj[key] = obj;
+            returnObj[key] = $("#" + key + random);
 
         }
         if (element.type === "number") {
@@ -44,17 +43,13 @@ function addDynamicFilters(div,data){
 
         }
         if (element.type === "comboBox") {
-            div.append('<div class="col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
+            div.append('<div class="filterCol col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
                 "<select  data-search='true' class='form-control'   value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "'>" +
                 "<option value='0'>ყველა</option>" +
                 "</select>" +
                 "</div></div>");
-            var obj=$("#"+key + random);
-            obj.change(function () {
-                element.handler(obj.val());
-            });
-            returnObj[key]=obj;
+            returnObj[key] = $("#" + key + random);
             var localKey = key;
             var localValueField = element.valueField;
             var localNameField = element.nameField;
