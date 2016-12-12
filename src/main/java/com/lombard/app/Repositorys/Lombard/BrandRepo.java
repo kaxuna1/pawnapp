@@ -14,4 +14,6 @@ import java.util.List;
 @Transactional
 public interface BrandRepo extends JpaRepository<Brand,Long> {
     List<Brand> findByTypeOrType(@Param("type") int type, @Param("type1") int i);
+
+    List<Brand> findByIdIn(List<Long> brands);
 }

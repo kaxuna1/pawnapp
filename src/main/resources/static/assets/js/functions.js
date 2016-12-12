@@ -381,7 +381,7 @@ $(document).ready(function () {
                 '<div class="input-group">' +
                 '<div class="icheck-list">' +
                 ' <label>' +
-                '<input id="forSaleCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გასაყიდად გაგზავნილი' +
+                '<input id="forSaleCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გასაყიდები' +
                 '</label>            ' +
                 '</div>' +
                 '</div>' +
@@ -398,7 +398,7 @@ $(document).ready(function () {
                 '<div class="col-md-2">     ' +
                 '<div class="input-group">' +
                 '<div class="icheck-list">' +
-                ' <label>' +
+                ' <label style="font-size: 13px;">' +
                 '<input id="freeCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გათავისუფლებული' +
                 '</label>            ' +
                 '</div>' +

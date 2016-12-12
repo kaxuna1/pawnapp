@@ -1,6 +1,7 @@
 package com.lombard.app.controllers.Lombard;
 
 
+import com.lombard.app.Repositorys.FilialRepository;
 import com.lombard.app.Repositorys.Lombard.*;
 import com.lombard.app.Repositorys.SessionRepository;
 import com.lombard.app.models.Enum.JsonReturnCodes;
@@ -10,7 +11,6 @@ import com.lombard.app.models.Lombard.Dictionary.Brand;
 import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.ItemClasses.MobilePhone;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
-import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa_;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
 import com.lombard.app.models.UserManagement.Session;
@@ -19,24 +19,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.data.jpa.domain.Specifications.*;
+import static com.lombard.app.models.specifications.UzrunvelyofaSpecifications.*;
+import static org.springframework.data.jpa.domain.Specifications.where;
 
 /**
  * Created by kaxa on 11/19/16.
  */
 @Controller
 public class MobilePhoneController {
+    @PersistenceContext
+    EntityManager em;
     @Autowired
     private SessionRepository sessionRepository;
     @Autowired
@@ -53,8 +54,8 @@ public class MobilePhoneController {
     private UzrunvelyofaRepo uzrunvelyofaRepo;
     @Autowired
     private SinjiRepo sinjiRepo;
-    @PersistenceContext
-    EntityManager em;
+    @Autowired
+    private FilialRepository filialRepo;
 
     @ResponseBody
     @RequestMapping("/createMobilePhone")
@@ -145,12 +146,12 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
         }
         if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli&&!free&&!taken){
-            statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
+          /*  statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
-            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());*/
         }
         List<Brand> brands=new ArrayList<>();
         if(brand!=0){
@@ -173,44 +174,71 @@ public class MobilePhoneController {
                                      @RequestParam(value = "model", required = true, defaultValue = "") String model,
                                      @RequestParam(value = "name", required = true, defaultValue = "") String name,
                                      @RequestParam(value = "sinji", required = true, defaultValue = "0") long sinji,
-                                     @RequestParam(value = "index", required = true, defaultValue = "0") int index){
+                                     @RequestParam(value = "index", required = true, defaultValue = "0") int index,
+                                     @RequestParam(value = "type", required = true, defaultValue = "0") int type,
+                                     @CookieValue("projectSessionId") long sessionId,
+                                     @RequestParam(value = "datvirtuli", required = true, defaultValue = "false") boolean datvirtuli,
+                                     @RequestParam(value = "dakavebuli", required = true, defaultValue = "false") boolean dakavebuli,
+                                     @RequestParam(value = "gasayidi", required = true, defaultValue = "false") boolean gasayidi,
+                                     @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli,
+                                     @RequestParam(value = "free", required = true, defaultValue = "false") boolean free,
+                                     @RequestParam(value = "taken", required = true, defaultValue = "false") boolean taken) {
 
 
-        CriteriaBuilder builder = em.getCriteriaBuilder();
+        Session session = sessionRepository.findOne(sessionId);
 
 
-
-        CriteriaQuery<Uzrunvelyofa> query = builder.createQuery(Uzrunvelyofa.class);
-        Root<Uzrunvelyofa> root = query.from(Uzrunvelyofa.class);
-        List<Predicate> predicates = new ArrayList<>();
-
-        predicates.add(builder.equal(root.get(Uzrunvelyofa_.active),true));
+        Specifications<Uzrunvelyofa> specifications = where(filialSpec(session.getUser().getFilial()));
+        specifications = specifications.and(active());
 
         if(brand!=0){
-
+            List<Long> brands = new ArrayList<>();
+            brands.add(brand);
+            specifications = specifications.and(brand(brands, brandRepo));
         }
-        Predicate sinjiP = null;
         if(sinji!=0){
-            List<Sinji> sinjis=new ArrayList<>();
-            sinjis.add(sinjiRepo.findOne(sinji));
-            Expression<Sinji> expression=root.get(Uzrunvelyofa_.sinji);
-
-            sinjiP = expression.in(sinjis);
-            predicates.add(builder.and(sinjiP));
+            List<Long> sinjiIds = new ArrayList<>();
+            sinjiIds.add(sinji);
+            List<Sinji> sinjis = sinjiRepo.findByIdIn(sinjiIds);
+            specifications = specifications.and(UzrunvelyofaSpecifications.sinjiSpec(sinjis));
+        }
+        if (type != 0) {
+            specifications = specifications.and(UzrunvelyofaSpecifications.typeSpec(type));
         }
         if(!model.isEmpty()){
-            Predicate modelPredicate=builder.like(root.<String>get(Uzrunvelyofa_.model),"%"+model+"%");
-            predicates.add(modelPredicate);
+            specifications = specifications.and(UzrunvelyofaSpecifications.modelLike(model));
         }
         if(!name.isEmpty()){
-            Predicate modelPredicate=builder.like(root.<String>get(Uzrunvelyofa_.name),"%"+name+"%");
-            predicates.add(modelPredicate);
+            specifications = specifications.and(UzrunvelyofaSpecifications.nameLike(name));
         }
-        List<Specification<Uzrunvelyofa>> specifications=new ArrayList<>();
+        List<Integer> statuses = new ArrayList<>();
+
+        if (datvirtuli)
+            statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+        if (dakavebuli)
+            statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
+        if (gasayidi)
+            statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
+        if (gayiduli)
+            statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
+        if (free) {
+            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
+        }
+        if (taken) {
+            statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
+        }
+        if (!datvirtuli && !dakavebuli && !gasayidi && !gayiduli && !free && !taken) {
+            statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
+        }
+        specifications = specifications.and(UzrunvelyofaSpecifications.statuses(statuses));
 
 
-
-        return uzrunvelyofaRepo.findAll(,constructPageSpecification(10));
+        return uzrunvelyofaRepo.findAll(specifications, constructPageSpecification(index));
 
         /*query.where(predicates.toArray(new Predicate[predicates.size()]));
         return em.createQuery(query.select(root)).getResultList();*/

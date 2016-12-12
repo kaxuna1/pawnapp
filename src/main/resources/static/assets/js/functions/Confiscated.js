@@ -3,18 +3,42 @@
  */
 function loadConfiscatedData(index, search, noAnimation) {
 
-    var dynamicFilters=addDynamicFilters($("#dynamicFilterRow").html(""),
-        {brand: {
-            name: "ბრენდი",
-            type: "comboBox",
-            valueField: "id",
-            nameField: "name",
-            url: "/getbrands/0",
-            IdToNameMap: brands,
-            handler: function () {
-                dataLoading(0, search);
+    var dynamicFilters = addDynamicFilters($("#dynamicFilterRow").html(""),
+        {
+            brand: {
+                name: "ბრენდი",
+                type: "comboBox",
+                valueField: "id",
+                nameField: "name",
+                url: "/getbrands/0",
+                handler: function () {
+                    dataLoading(0, search);
+                }
+            },
+            type: {
+                name: "ტიპი",
+                type: "comboBox",
+                valueField: "id",
+                nameField: "name",
+                handler: function () {
+                    dataLoading(0, search);
+                },
+                data: [
+                    {id: "1", name: "მობილური"},
+                    {id: "2", name: "ლეპტოპი"},
+                    {id: "3", name: "ოქრო"},
+                    {id: "4", name: "საოჟახო ტექნიკა"},
+                    {id: "5", name: "სხვა"}
+                ]
+            },
+            model: {
+                name: "მოდელი",
+                type: "text",
+                handler: function () {
+                    dataLoading(0, search);
+                }
             }
-        }});
+        });
 
     $("#datvirtuliCheck").unbind().on('ifChanged', function () {
         dataLoading();
@@ -45,7 +69,7 @@ function loadConfiscatedData(index, search, noAnimation) {
             dataLoading()
         });
     function dataLoading() {
-        $.getJSON("getdakavebulinivtebi?index=" + index +
+        $.getJSON("spec?index=" + index +
             "&datvirtuli=" +
             ($("#datvirtuliCheck").is(":checked") ? "true" : "false") +
             "&dakavebuli=" +
@@ -57,8 +81,10 @@ function loadConfiscatedData(index, search, noAnimation) {
             "&free=" +
             ($("#freeCheck").is(":checked") ? "true" : "false") +
             "&taken=" +
-            ($("#takenCheck").is(":checked") ? "true" : "false")+
-            "&brand=" + dynamicFilters.brand.val()+
+            ($("#takenCheck").is(":checked") ? "true" : "false") +
+            "&brand=" + dynamicFilters.brand.val() +
+            "&model=" + dynamicFilters.model.val() +
+            "&type=" + dynamicFilters.type.val() +
             "&search=" + search, function (result) {
             $("#dataGridHeader").html("");
             $("#dataGridBody").html("");
@@ -90,7 +116,7 @@ function loadConfiscatedData(index, search, noAnimation) {
                 if (currentElement.type === 2) {
                     type += "<img style='height: 20px' src='assets/images/lap.png' />";
                     name += "<span style='font-family: font1;'>კომპ: " + currentElement.brand.name + " " +
-                        currentElement.model+" cpu: "+ currentElement.cpu + "</span>";
+                        currentElement.model + " cpu: " + currentElement.cpu + "</span>";
                 }
                 if (currentElement.type === 4) {
                     type += "<img style='height: 20px' src='assets/images/homeTech.png' />";
@@ -121,14 +147,14 @@ function loadConfiscatedData(index, search, noAnimation) {
             var gridRow = $('.gridRowClientUz2');
             gridRow.css('cursor', 'pointer');
             gridRow.unbind();
-            gridRow.click(function (){
+            gridRow.click(function () {
 
             });
             var loanButton = $('.uzLoanNumber');
             loanButton.css('cursor', 'pointer');
             loanButton.unbind();
-            loanButton.click(function (){
-                $.getJSON("/getloan/"+dataArray[$(this).attr("value")].loanId,function(result){
+            loanButton.click(function () {
+                $.getJSON("/getloan/" + dataArray[$(this).attr("value")].loanId, function (result) {
                     openLoanGlobal(result)
                 })
             });

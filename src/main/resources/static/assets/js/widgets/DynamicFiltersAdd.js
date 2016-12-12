@@ -17,10 +17,15 @@ function addDynamicFilters(div,data){
         console.log(element);
         if (element.type === "text") {
 
-            div.append('<div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
+            div.append('<div class="col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
                 "<input class='form-control' type='text' placeholder='" + element.name + "' value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "' />" +
-                "</div>")
+                "</div></div>")
+            var obj = $("#" + key + random);
+            obj.change(function () {
+                element.handler();
+            });
+            returnObj[key] = obj;
 
         }
         if (element.type === "number") {
