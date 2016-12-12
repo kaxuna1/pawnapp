@@ -1,5 +1,6 @@
 package com.lombard.app.controllers
 
+import com.google.gson.JsonParser
 import com.lombard.app.Repositorys.Lombard.*
 import com.lombard.app.Repositorys.SessionRepository
 import com.lombard.app.Repositorys.UserRepository
@@ -12,6 +13,8 @@ import com.lombard.app.models.JsonMessage
 import com.lombard.app.models.Lombard.Dictionary.Brand
 import com.lombard.app.models.Lombard.Loan
 import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes
+import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes
+import com.lombard.app.models.UserManagement.Session
 import com.lombard.app.scheduledtasks.ScheduledTasks
 import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
@@ -291,9 +294,51 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                 "loanSum" to (loanRepo.clientLoanSum(client) ?: 0),
                 "interestsSum" to (interestsRepo.clientInterest(client) ?: 0),
                 "paymentsSum" to (paymentRepo.clientPayments(client) ?: 0),
-                "firstLoan" to ((loanRepo.findFirstByClientAndIsActiveOrderByCreateDateAsc(client,true)?.createDate)),
-                "unpaied" to (interestsRepo.getUnpaied(client.id)?:0)
+                "firstLoan" to ((loanRepo.findFirstByClientAndIsActiveOrderByCreateDateAsc(client, true)?.createDate)),
+                "unpaied" to (interestsRepo.getUnpaied(client.id) ?: 0)
         )
+    }
+
+    @GetMapping("/sendItemsToSell")
+    fun sendItemsToSell(@CookieValue("projectSessionId") sessionId: Long, @RequestParam(value = "json") jsonString: String): Any {
+
+        val session = sessionRepo.findOne(sessionId)
+
+        if (!session.isIsactive)
+            return mapOf(
+                    "message" to "NotLoggedIn",
+                    "code" to JsonReturnCodes.NOTLOGGEDIN.code
+            )
+
+
+        val jsonParser = JsonParser()
+        val mainObject = jsonParser.parse(jsonString).asJsonArray
+
+
+        try {
+            mainObject.forEach { obj ->
+                run {
+                    var uzrunvelyofa = uzrunvelyofaRepo.findOne(obj.asLong)
+                    uzrunvelyofa.status = UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.code
+                    uzrunvelyofaRepo.save(uzrunvelyofa);
+                }
+            }
+            return mapOf(
+                    "message" to "OK",
+                    "code" to JsonReturnCodes.ERROR.code
+            )
+        } catch (e: Exception) {
+            return mapOf(
+                    "message" to e.printStackTrace(),
+                    "code" to JsonReturnCodes.ERROR.code
+            )
+        }
+
+        /*for (i in 0..mainObject.size()){
+
+
+        }*/
+
     }
 
 
