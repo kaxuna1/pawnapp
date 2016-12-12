@@ -12,6 +12,7 @@ import com.lombard.app.models.Enum.ReportType
 import com.lombard.app.models.JsonMessage
 import com.lombard.app.models.Lombard.Dictionary.Brand
 import com.lombard.app.models.Lombard.Loan
+import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement
 import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes
 import com.lombard.app.models.UserManagement.Session
@@ -354,6 +355,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                     uz.status==UzrunvelyofaStatusTypes.GATAVISUFLEBULI.code
             ){
                 uz.status=UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.code
+                uz.uzrunvelyofaMovements.add(UzrunvelyofaMovement("გადაეცა პატრონს",UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.code,uz))
                 uz=uzrunvelyofaRepo.save(uz)
                 StaticData.mapLoan(uz.loan);
                 return mapOf("code" to JsonReturnCodes.Ok.code,"message" to "OK")

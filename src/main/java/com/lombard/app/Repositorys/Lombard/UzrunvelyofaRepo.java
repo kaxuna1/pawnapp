@@ -6,7 +6,9 @@ import com.lombard.app.models.Lombard.Client;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +19,7 @@ import java.util.List;
  * Created by kaxa on 11/29/16.
  */
 @Transactional
-public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long> {
+public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long>,JpaSpecificationExecutor<Uzrunvelyofa> {
     @Query(value = "select u from Uzrunvelyofa u left join u.brand b join u.loan l join l.client c where" +
             " u.status in :statuses and u.active=1 and l.filial=:filial and (" +
             " upper(b.name)  LIKE CONCAT('%',upper(:search),'%') or" +
@@ -31,4 +33,5 @@ public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long> {
     @Query("select u from Uzrunvelyofa u join u.loan l where " +
             "l in (select l from l where l.isActive=true and l.client=:client) and u.active=true order by l.createDate desc ")
     Page<Uzrunvelyofa> findClientsUzrunvelyofa( @Param("client") Client client,  Pageable constructPageSpecification);
+
 }

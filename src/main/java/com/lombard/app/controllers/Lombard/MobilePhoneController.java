@@ -10,18 +10,27 @@ import com.lombard.app.models.Lombard.Dictionary.Brand;
 import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.ItemClasses.MobilePhone;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa_;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
 import com.lombard.app.models.UserManagement.Session;
+import com.lombard.app.models.specifications.UzrunvelyofaSpecifications;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.springframework.data.jpa.domain.Specifications.*;
 
 /**
  * Created by kaxa on 11/19/16.
@@ -44,6 +53,9 @@ public class MobilePhoneController {
     private UzrunvelyofaRepo uzrunvelyofaRepo;
     @Autowired
     private SinjiRepo sinjiRepo;
+    @PersistenceContext
+    EntityManager em;
+
     @ResponseBody
     @RequestMapping("/createMobilePhone")
     public JsonMessage create(@CookieValue("projectSessionId") long sessionId,
@@ -114,7 +126,8 @@ public class MobilePhoneController {
                                              @RequestParam(value = "gasayidi", required = true, defaultValue = "false") boolean gasayidi,
                                              @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli,
                                              @RequestParam(value = "free", required = true, defaultValue = "false") boolean free,
-                                             @RequestParam(value = "taken", required = true, defaultValue = "false") boolean taken){
+                                             @RequestParam(value = "taken", required = true, defaultValue = "false") boolean taken,
+                                             @RequestParam(value = "brand", required = true, defaultValue = "0") long brand){
         List<Integer> statuses= new ArrayList<>();
 
         if(datvirtuli)
@@ -139,12 +152,68 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
         }
+        List<Brand> brands=new ArrayList<>();
+        if(brand!=0){
+            brands.add(brandRepo.findOne(brand));
+        }
+
+
+
 
 
         return uzrunvelyofaRepo.findForFilial(search,
                 sessionRepository.findOne(sessionId).getUser().getFilial(),
                 statuses,
                 constructPageSpecification(index));
+    }
+
+    @GetMapping("/spec")
+    @ResponseBody
+    public Page<Uzrunvelyofa> getByL(@RequestParam(value = "brand", required = true, defaultValue = "0") long brand,
+                                     @RequestParam(value = "model", required = true, defaultValue = "") String model,
+                                     @RequestParam(value = "name", required = true, defaultValue = "") String name,
+                                     @RequestParam(value = "sinji", required = true, defaultValue = "0") long sinji,
+                                     @RequestParam(value = "index", required = true, defaultValue = "0") int index){
+
+
+        CriteriaBuilder builder = em.getCriteriaBuilder();
+
+
+
+        CriteriaQuery<Uzrunvelyofa> query = builder.createQuery(Uzrunvelyofa.class);
+        Root<Uzrunvelyofa> root = query.from(Uzrunvelyofa.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        predicates.add(builder.equal(root.get(Uzrunvelyofa_.active),true));
+
+        if(brand!=0){
+
+        }
+        Predicate sinjiP = null;
+        if(sinji!=0){
+            List<Sinji> sinjis=new ArrayList<>();
+            sinjis.add(sinjiRepo.findOne(sinji));
+            Expression<Sinji> expression=root.get(Uzrunvelyofa_.sinji);
+
+            sinjiP = expression.in(sinjis);
+            predicates.add(builder.and(sinjiP));
+        }
+        if(!model.isEmpty()){
+            Predicate modelPredicate=builder.like(root.<String>get(Uzrunvelyofa_.model),"%"+model+"%");
+            predicates.add(modelPredicate);
+        }
+        if(!name.isEmpty()){
+            Predicate modelPredicate=builder.like(root.<String>get(Uzrunvelyofa_.name),"%"+name+"%");
+            predicates.add(modelPredicate);
+        }
+        List<Specification<Uzrunvelyofa>> specifications=new ArrayList<>();
+
+
+
+        return uzrunvelyofaRepo.findAll(,constructPageSpecification(10));
+
+        /*query.where(predicates.toArray(new Predicate[predicates.size()]));
+        return em.createQuery(query.select(root)).getResultList();*/
     }
 
 

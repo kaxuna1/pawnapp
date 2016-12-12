@@ -45,8 +45,14 @@ function addDynamicFilters(div,data){
             div.append('<div class="col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
                 "<select  data-search='true' class='form-control'   value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "'>" +
+                "<option value='0'>ყველა</option>" +
                 "</select>" +
                 "</div></div>");
+            var obj=$("#"+key + random);
+            obj.change(function () {
+               element.handler();
+            });
+            returnObj[key]=obj;
             var localKey = key;
             var localValueField = element.valueField;
             var localNameField = element.nameField;
@@ -57,6 +63,7 @@ function addDynamicFilters(div,data){
                 OuterFuncSearch(localKey, localValueField, localNameField, random, element, element.IdToNameMap);
         }
     }
+    return returnObj;
 }
 function OuterFuncSearch(localKey, localValueField, localNameField, random, element, IdToNameMap) {
     $.getJSON(element.url, function (result) {
