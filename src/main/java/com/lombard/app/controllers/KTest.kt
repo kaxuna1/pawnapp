@@ -340,6 +340,30 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         }*/
 
     }
+    @PostMapping("/giveClientUz/{id}")
+    public fun giveClientUz(@PathVariable("id") id: Long,
+                            @CookieValue("projectSessionId") sessionId: Long):Any{
+
+
+
+        try{
+            val session=sessionRepo.findOne(sessionId);
+            var uz=uzrunvelyofaRepo.findOne(id);
+            if(session.isIsactive&&uz.isActive &&
+                    uz.loan.filial.id==session.user.filial.id&&
+                    uz.status==UzrunvelyofaStatusTypes.GATAVISUFLEBULI.code
+            ){
+                uz.status=UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.code
+                uz=uzrunvelyofaRepo.save(uz)
+                StaticData.mapLoan(uz.loan);
+                return mapOf("code" to JsonReturnCodes.Ok.code,"message" to "OK")
+            }
+        }catch(e:Exception){
+            e.printStackTrace()
+            return mapOf("code" to JsonReturnCodes.ERROR.code,"message" to e.message)
+        }
+        return true;
+    }
 
 
     private fun constructPageSpecification(pageIndex: Int, size: Int): Pageable {

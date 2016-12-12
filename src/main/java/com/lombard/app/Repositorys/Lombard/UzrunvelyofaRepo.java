@@ -18,12 +18,12 @@ import java.util.List;
  */
 @Transactional
 public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long> {
-    @Query(value = "select u from Uzrunvelyofa u join u.brand b join u.loan l join l.client c where" +
+    @Query(value = "select u from Uzrunvelyofa u left join u.brand b join u.loan l join l.client c where" +
             " u.status in :statuses and u.active=1 and l.filial=:filial and (" +
             " upper(b.name)  LIKE CONCAT('%',upper(:search),'%') or" +
             " u.model LIKE CONCAT('%',:search,'%') or" +
             " u.IMEI  LIKE CONCAT('%',:search,'%') or" +
-            " c.personalNumber LIKE CONCAT('%',:search,'%'))")
+            " c.personalNumber LIKE CONCAT('%',:search,'%')) order by l.createDate desc ")
     Page<Uzrunvelyofa> findForFilial(@Param("search") String search,
                                      @Param("filial") Filial filial,
                                      @Param("statuses")List<Integer> statuses, Pageable pageable);

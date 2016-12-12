@@ -3,6 +3,15 @@
  */
 function loadConfiscatedData(index, search, noAnimation) {
 
+    addDynamicFilters($("#dynamicFilterRow"),
+        {brand: {
+            name: "ბრენდი",
+            type: "comboBox",
+            valueField: "id",
+            nameField: "name",
+            url: "/getbrands/0",
+            IdToNameMap: brands
+        }})
 
     $("#datvirtuliCheck").unbind().on('ifChanged', function () {
         loadConfiscatedData(0, search);
@@ -17,6 +26,9 @@ function loadConfiscatedData(index, search, noAnimation) {
         loadConfiscatedData(0, search);
     });
     $("#freeCheck").unbind().on('ifChanged', function () {
+        loadConfiscatedData(0, search);
+    });
+    $("#takenCheck").unbind().on('ifChanged', function () {
         loadConfiscatedData(0, search);
     });
 
@@ -41,6 +53,8 @@ function loadConfiscatedData(index, search, noAnimation) {
             ($("#soldCheck").is(":checked") ? "true" : "false") +
             "&free=" +
             ($("#freeCheck").is(":checked") ? "true" : "false") +
+            "&taken=" +
+            ($("#takenCheck").is(":checked") ? "true" : "false") +
             "&search=" + search, function (result) {
             $("#dataGridHeader").html("");
             $("#dataGridBody").html("");

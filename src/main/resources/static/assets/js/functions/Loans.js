@@ -638,83 +638,80 @@ function loadUzrunvelyofaDataForLoan(DOMElements) {
 }
 
 function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
-    DOMElements.uzrunvelyofaDataGridDiv.html(uzrunvelyofaGridTemplate);
-    DOMElements.uzrunvelyofaContainerDiv = $("#uzrunvelyofaContainerDiv");
-    var data = DOMElements.currentObj.uzrunvelyofa;
-    for (var key in data) {
-        var element = data[key];
-        if (element.type !== 1)
-            continue;
+    DOMElements.uzrunvelyofaDataGridDiv.html(clientProfileUzrunvelyofasTemplate);
+    DOMElements.uzrunvelyofaContainerDiv = $("#clientUzrunvelyofaDataTableBody");
+    var dataArray = DOMElements.currentObj.uzrunvelyofa;
+    for (var i = 0; i < dataArray.length; i++) {
+        var currentElement = dataArray[i];
+        console.log(new Date(currentElement["createDate"]));
+        var name = "";
 
-        var statusString = '<span class="label label-danger">#' + element.number + '</span>' +
-            '<span class="label label-danger">' + element.imei + '</span>' +
-            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
-        DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
-            '<div class="media">' +
-            '<img src="assets/images/phone.png" alt="avatar 3" width="40" class="sender-img">' +
-            '   <div class="media-body">' +
-            '   <div style="width: 30%;" class="sender">' + element.brand.name + " " + element.model + '</div>' +
-            '<div style="width: 40%;" class="subject">' + statusString + '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
-        );
+        var type = ""
+        if (currentElement.type === 3) {
+            type += "<img style='height: 20px' src='assets/images/gold.png' />";
+            name += "<span style='font-family: font1;'>" + currentElement.name + " სინჯი: " +
+                currentElement.sinji.name + " " + currentElement.mass + " გრამი</span>";
+        }
+        if (currentElement.type === 1) {
+            type += "<img style='height: 20px' src='assets/images/phone.png' />";
+            name += "<span style='font-family: font1;'>" + currentElement.brand.name + " " +
+                currentElement.model + " imei:" + currentElement.imei + "</span>";
+        }
+        if (currentElement.type === 2) {
+            type += "<img style='height: 20px' src='assets/images/lap.png' />";
+            name += "<span style='font-family: font1;'>კომპ: " + currentElement.brandName + " " +
+                currentElement.modelName + "</span>";
+            name += "<span style='font-family: font1;'>მობილური: " + currentElement.brandName + " " +
+                currentElement.modelName + "</span>";
+        }
+        if (currentElement.type === 4) {
+            type += "<img style='height: 20px' src='assets/images/homeTech.png' />";
+        }
+        console.log(currentElement["createDate"]);
+        var buttons="";
+        if(currentElement.status===4){
+            buttons+="<button class='btn giveClientUz' value='"+i+"'>კლიენტზე გაცემა</button>";
+        }
+        currentElement.clientSideType=type;
+        currentElement.clientSideName=name;
+
+        DOMElements.uzrunvelyofaContainerDiv.append("<tr>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + type + " " + name + "</td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["number"] + "</td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["sum"] + "</td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + loanStatuses[currentElement["status"]] + "</td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + buttons + "</td>" +
+            "</tr>");
     }
-    var dataLaps = DOMElements.currentObj.uzrunvelyofa;
-    for (var key in dataLaps) {
-        var element = dataLaps[key];
-        if (element.type !== 2)
-            continue;
-        var statusString = '<span class="label label-danger">#' + element.number + '</span>' +
-            '<span class="label label-danger">CPU ' + element.cpu + '</span>' +
-            '<span class="label label-danger">GPU ' + element.gpu + '</span>' +
-            '<span class="label label-danger">RAM ' + element.ram + '</span>' +
-            '<span class="label label-danger">HDD ' + element.hdd + '</span>' +
-            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
-        DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
-            '<div class="media">' +
-            '   <div class="media-body">' +
-            '   <div style="width: 22%;margin-left: 17px;" class="sender">' + element.brand.name + " " + element.model + '</div>' +
-            '<div style="width: 70%;" class="subject">' + statusString + '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
-        );
-    }
-    var dataGold = DOMElements.currentObj.uzrunvelyofa;
-    for (var key in dataGold) {
-        var element = dataGold[key];
-        if (element.type !== 3)
-            continue;
-        var statusString = '<span class="label label-danger">წონა: ' + element.mass + 'გრამი</span>' +
-            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
-        DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
-            '<div class="media">' +
-            '   <div class="media-body">' +
-            '   <div style="width: 42%;margin-left: 17px;" class="sender">' + element.sinji.name + " " + element.name + '</div>' +
-            '<div style="width: 50%;" class="subject">' + statusString + '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
-        );
-    }
-    var dataHomeTech = DOMElements.currentObj.uzrunvelyofa;
-    for (var key in dataGold) {
-        var element = dataGold[key];
-        if (element.type !== 4)
-            continue;
-        var statusString =
-            '<span class="label label-danger">' + element.sum + ' ლარი</span>';
-        DOMElements.uzrunvelyofaContainerDiv.append('<div value="' + key + '" class="uzrunvelyofa-item stage-item message-item media">' +
-            '<div class="media">' +
-            '   <div class="media-body">' +
-            '   <div style="width: 42%;margin-left: 17px;" class="sender">' + element.name + ' ' + element.brand.name + " " + element.model + '</div>' +
-            '<div style="width: 50%;" class="subject">' + statusString + '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
-        );
-    }
+    $(".giveClientUz").click(function () {
+        var i=$(this).attr("value");
+        var element=dataArray[i];
+       showModalWithTableInside(function (head, body, modal) {
+           head.append(element.clientSideType);
+           head.append(element.clientSideName);
+       }, {"გაცემა": function () {
+           $.ajax({
+               method:"POST",
+               url:"/giveClientUz/"+element.id
+           }).done(function (result) {
+               if (result.code === 0) {
+                   $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result2) {
+                       loadLoansData(indexG, searchG, true);
+                       openLoanGlobal(result2);
+                       alert(result.message);
+                   });
+
+               }else{
+                   alert("მოხდა შეცდომა")
+               }
+           })
+       }},400);
+    });
+
+
+
+
+
     $(".uzrunvelyofa-item").click(function () {
         var item = data[$(this).attr("value")];
         showModalWithTableInside(function (head, body, modal) {

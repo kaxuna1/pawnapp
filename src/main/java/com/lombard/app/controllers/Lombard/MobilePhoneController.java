@@ -89,6 +89,9 @@ public class MobilePhoneController {
         int type2=0;
         if(type==1||type==2)
             type2=3;
+        if(type==0){
+            return brandRepo.findAll();
+        }
 
         return brandRepo.findByTypeOrType(type,type2);
     }
@@ -110,7 +113,8 @@ public class MobilePhoneController {
                                              @RequestParam(value = "dakavebuli", required = true, defaultValue = "false") boolean dakavebuli,
                                              @RequestParam(value = "gasayidi", required = true, defaultValue = "false") boolean gasayidi,
                                              @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli,
-                                             @RequestParam(value = "free", required = true, defaultValue = "false") boolean free){
+                                             @RequestParam(value = "free", required = true, defaultValue = "false") boolean free,
+                                             @RequestParam(value = "taken", required = true, defaultValue = "false") boolean taken){
         List<Integer> statuses= new ArrayList<>();
 
         if(datvirtuli)
@@ -123,13 +127,17 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
         if(free) {
             statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
+        }
+        if(taken) {
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
         }
-        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli&&!free){
+        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli&&!free&&!taken){
             statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
+            statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
         }
 
 

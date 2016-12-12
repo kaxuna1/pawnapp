@@ -403,12 +403,23 @@ $(document).ready(function () {
                 '</label>            ' +
                 '</div>' +
                 '</div>' +
-                '</div>');
+                '</div>' +
+                '<div class="col-md-2">     ' +
+                '<div class="input-group">' +
+                '<div class="icheck-list">' +
+                ' <label>' +
+                '<input id="takenCheck" type="checkbox" data-checkbox="icheckbox_square-blue">გატანილი' +
+                '</label>            ' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>').append("<div id='dynamicFilterRow' class='row'></div>");
             $('input').iCheck({
                 checkboxClass: 'icheckbox_minimal',
                 radioClass: 'iradio_minimal',
                 increaseArea: '20%' // optional
             });
+
             if (datarowSlide) {
                 $("#dataRow").slideDown("slow");
                 $("#dashRow").slideUp("slow");

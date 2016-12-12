@@ -241,24 +241,3 @@ function dynamicChooserToCallback(div, data, callback,afterDraw, beforeDelete) {
         afterDraw();
     }
 }
-function OuterFunc(localKey, localValueField, localNameField, random, element, IdToNameMap) {
-    $.getJSON(element.url, function (result) {
-        console.log(result);
-        console.log(localKey);
-        for (key2 in result) {
-            if (IdToNameMap) {
-                IdToNameMap[result[key2][localValueField]] = result[key2][localNameField];
-            }
-            $("#" + localKey + random + "").append('<option value="' + result[key2][localValueField] + '">' +
-                result[key2][localNameField] + '</option>')
-        }
-        $("#" + localKey + random + "").select2();
-    })
-}
-function OuterFuncLocalData(localKey, localValueField, localNameField, random, element, result) {
-    for (key2 in result) {
-        $("#" + localKey + random + "").append('<option value="' + result[key2][localValueField] + '">' +
-            result[key2][localNameField] + '</option>')
-    }
-    $("#" + localKey + random + "").select2();
-}
