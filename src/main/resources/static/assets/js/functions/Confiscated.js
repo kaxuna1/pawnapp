@@ -20,8 +20,11 @@ function loadConfiscatedData(index, search, noAnimation) {
                 type: "comboBox",
                 valueField: "id",
                 nameField: "name",
-                handler: function () {
+                handler: function (newVal) {
+
+                    console.log(newVal);
                     dataLoading(0, search);
+
                 },
                 data: [
                     {id: "1", name: "მობილური"},
@@ -31,8 +34,25 @@ function loadConfiscatedData(index, search, noAnimation) {
                     {id: "5", name: "სხვა"}
                 ]
             },
+            sinji: {
+                name: "სინჯი",
+                type: "comboBox",
+                valueField: "id",
+                nameField: "name",
+                url: "/getSinjebi",
+                handler: function () {
+                    dataLoading(0, search);
+                }
+            },
             model: {
                 name: "მოდელი",
+                type: "text",
+                handler: function () {
+                    dataLoading(0, search);
+                }
+            },
+            name: {
+                name: "სახელი",
                 type: "text",
                 handler: function () {
                     dataLoading(0, search);
@@ -84,7 +104,9 @@ function loadConfiscatedData(index, search, noAnimation) {
             ($("#takenCheck").is(":checked") ? "true" : "false") +
             "&brand=" + dynamicFilters.brand.val() +
             "&model=" + dynamicFilters.model.val() +
+            "&name=" + dynamicFilters.name.val() +
             "&type=" + dynamicFilters.type.val() +
+            "&sinji=" + dynamicFilters.sinji.val() +
             "&search=" + search, function (result) {
             $("#dataGridHeader").html("");
             $("#dataGridBody").html("");
@@ -99,7 +121,6 @@ function loadConfiscatedData(index, search, noAnimation) {
             var totalElements = result["totalElements"];
             for (i = 0; i < dataArray.length; i++) {
                 var currentElement = dataArray[i];
-                console.log(new Date(currentElement["createDate"]));
                 var name = "";
 
                 var type = ""
@@ -121,7 +142,6 @@ function loadConfiscatedData(index, search, noAnimation) {
                 if (currentElement.type === 4) {
                     type += "<img style='height: 20px' src='assets/images/homeTech.png' />";
                 }
-                console.log(currentElement["createDate"]);
 
                 $("#dataGridBody").append("<tr>" +
                     "<td><input value='" + currentElement["id"] + "' class='checkboxUz' type='checkbox' /></td>" +

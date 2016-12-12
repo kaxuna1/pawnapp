@@ -22,9 +22,6 @@ function addDynamicFilters(div,data){
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "' />" +
                 "</div></div>")
             var obj = $("#" + key + random);
-            obj.change(function () {
-                element.handler();
-            });
             returnObj[key] = obj;
 
         }
@@ -55,7 +52,7 @@ function addDynamicFilters(div,data){
                 "</div></div>");
             var obj=$("#"+key + random);
             obj.change(function () {
-               element.handler();
+                element.handler(obj.val());
             });
             returnObj[key]=obj;
             var localKey = key;
@@ -90,4 +87,11 @@ function OuterFuncLocalDataSearch(localKey, localValueField, localNameField, ran
             result[key2][localNameField] + '</option>')
     }
     $("#" + localKey + random + "").select2();
+    $("#" + localKey + random + "").change(function () {
+        element.handler($("#" + localKey + random + "").val());
+    })
+    
+}
+function OuterCallbackCaller() {
+
 }
