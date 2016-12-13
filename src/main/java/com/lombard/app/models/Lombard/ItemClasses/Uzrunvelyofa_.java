@@ -14,6 +14,8 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class Uzrunvelyofa_ {
     public static volatile SingularAttribute<Uzrunvelyofa, Long> id;
     public static volatile SingularAttribute<Uzrunvelyofa, String> model;
+    public static volatile SingularAttribute<Uzrunvelyofa, String> cpu;
+    public static volatile SingularAttribute<Uzrunvelyofa, String> gpu;
     public static volatile SingularAttribute<Uzrunvelyofa, String> name;
     public static volatile SingularAttribute<Uzrunvelyofa, Brand> brand;
     public static volatile SingularAttribute<Uzrunvelyofa, Sinji> sinji;
@@ -21,5 +23,7 @@ public class Uzrunvelyofa_ {
     public static volatile SingularAttribute<Uzrunvelyofa, Integer> type;
     public static volatile SingularAttribute<Uzrunvelyofa, Boolean> active;
     public static volatile SingularAttribute<Uzrunvelyofa, Loan> loan;
+    public static volatile SingularAttribute<Uzrunvelyofa, Float> mass;
+    public static volatile SingularAttribute<Uzrunvelyofa, Float> hdd;
 
 }

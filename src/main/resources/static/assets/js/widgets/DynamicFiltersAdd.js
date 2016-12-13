@@ -12,16 +12,36 @@ function addDynamicFilters(div,data){
     div = div.find("#div" + random + "" + random2);
 
     console.log(data);
-    for (key in data) {
+    for (var key in data) {
         var element = data[key];
         console.log(element);
         if (element.type === "text") {
-
-            div.append('<div class="filterCol col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
-                "<input class='form-control' type='text' placeholder='" + element.name + "' value='" +
+            var grouptext="";
+            if(element.operator){
+                grouptext+='<div class="input-group-btn">' +
+                    '<button type="button" value="1" class="btn btn-default dropdown-toggle " id="operatorCurrent'+ key + random +'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">'+element.name+" "+element.operator.data[1]+'<span class="caret"></span></button>' +
+                    '<ul class="dropdown-menu dropdown-menu-right">';
+                for(key2 in element.operator.data){
+                    //grouptext+="<option value='"+key2+"'>"+element.group.data[key2]+"</option>"
+                    grouptext+='<li><a class="operator'+ key + random +'" value="'+key2+'" href="#">'+element.operator.data[key2]+'</a></li>';
+                }
+                grouptext+="</ul></div>"
+            }
+            //<label for="' + key + random + '">' + element.name + '</label>
+            div.append('<div id="div'+key + random+'" class="filterCol col-md-2"><div class="input-group">' +
+                grouptext+"<input class='form-control' type='text' placeholder='" + element.name + "' value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "' />" +
                 "</div></div>")
             returnObj[key] = $("#" + key + random);
+            returnObj[key].par=$("#div"+key + random);
+            returnObj[key].operatorObj=$("#operatorCurrent"+ key + random);
+            if(element.operator){
+                OuterFuncOperatorInit(key,random,element.operator,element.name);
+            }
+
+
+
+
 
         }
         if (element.type === "number") {
@@ -43,13 +63,15 @@ function addDynamicFilters(div,data){
 
         }
         if (element.type === "comboBox") {
-            div.append('<div class="filterCol col-md-2"><div class="form-group"><label for="' + key + random + '">' + element.name + '</label>' +
+            //<label for="' + key + random + '">' + element.name + '</label>
+            div.append('<div id="div'+ key + random +'" class="filterCol col-md-2"><div class="form-group">' +
                 "<select  data-search='true' class='form-control'   value='" +
                 (element.value ? element.value : "") + "' name='" + key + "' id='" + key + random + "'>" +
-                "<option value='0'>ყველა</option>" +
+                "<option value='0'>ყველა "+element.name+"</option>" +
                 "</select>" +
                 "</div></div>");
             returnObj[key] = $("#" + key + random);
+            returnObj[key].par=$("#div"+key + random);
             var localKey = key;
             var localValueField = element.valueField;
             var localNameField = element.nameField;
@@ -82,11 +104,12 @@ function OuterFuncLocalDataSearch(localKey, localValueField, localNameField, ran
             result[key2][localNameField] + '</option>')
     }
     $("#" + localKey + random + "").select2();
-    $("#" + localKey + random + "").change(function () {
-        element.handler($("#" + localKey + random + "").val());
-    })
+    $
     
 }
-function OuterCallbackCaller() {
-
+function OuterFuncOperatorInit(key,random,operator,name) {
+    $('.operator'+ key + random).click(function () {
+        $("#operatorCurrent"+ key + random).html(name+" "+operator.data[$(this).attr("value")]+'<span class="caret"></span>');
+        $("#operatorCurrent"+ key + random).attr("value",$(this).attr("value"));
+    })
 }

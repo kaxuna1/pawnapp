@@ -295,7 +295,7 @@ public class LoanController {
                     laptopTemp.setCpu(laptop.get("cpu").getAsString());
                     laptopTemp.setGpu(laptop.get("gpu").getAsString());
                     laptopTemp.setRam(laptop.get("ram").getAsString());
-                    laptopTemp.setHdd(laptop.get("hdd").getAsString());
+                    laptopTemp.setHdd(laptop.get("hdd").getAsFloat());
                     laptopTemp.setType(UzrunvelyofaTypes.LAPTOP.getCODE());
                     laptopTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     laptopTemp.setSum(laptop.get("sum").getAsFloat());

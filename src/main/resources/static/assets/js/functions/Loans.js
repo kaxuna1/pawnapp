@@ -13,6 +13,7 @@ var homeTechBrands = {};
 var conditions = {};
 var indexG = 0;
 var searchG = "";
+
 function loadLoansData(index, search, noAnimation) {
     indexG = index;
     searchG = search;
@@ -266,7 +267,7 @@ function drawLoanInfoAdder(DOMElements) {
                 },
                 hdd: {
                     name: "hdd",
-                    type: "text"
+                    type: "numer"
                 },
                 sum: {
                     name: "შეფასება",
@@ -669,9 +670,10 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
         }
         console.log(currentElement["createDate"]);
         var buttons="";
-        if(currentElement.status===4){
+        if(currentElement.status===4||currentElement.readyToFree){
             buttons+="<button class='btn giveClientUz' value='"+i+"'>კლიენტზე გაცემა</button>";
         }
+
         currentElement.clientSideType=type;
         currentElement.clientSideName=name;
 
@@ -707,6 +709,7 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
            })
        }},400);
     });
+
 
 
 
@@ -849,6 +852,82 @@ function loadLoanDoActions(DOMElements) {
                     alert("მოხდა შეცდომა")
                 }
             });
+        });
+    if (!DOMElements.currentObj.closed)
+        createButtonWithHandlerr(DOMElements.loanDoActionsDiv, "დამატებით თანხის გაცემა", function () {
+            showModalWithTableInside(function (head, body, modal) {
+                head.html("<strong style='font-family: font1'>ამოირჩიეთ ნივთი რომლის ხარჯზეც გსურთ სესხის გაზრდა.</strong>")
+                body.html(loanAddingUzrunvelyofasTemplate)
+                var table=$("#loanAddingUzrunvelyofasDataTableBody");
+                var dataArray=DOMElements.currentObj.uzrunvelyofa;
+                for (var i = 0; i < dataArray.length; i++) {
+                    var currentElement = dataArray[i];
+                    console.log(new Date(currentElement["createDate"]));
+                    var name = "";
+
+                    var type = ""
+                    if (currentElement.type === 3) {
+                        type += "<img style='height: 20px' src='assets/images/gold.png' />";
+                        name += "<span style='font-family: font1;'>" + currentElement.name + " სინჯი: " +
+                            currentElement.sinji.name + " " + currentElement.mass + " გრამი</span>";
+                    }
+                    if (currentElement.type === 1) {
+                        type += "<img style='height: 20px' src='assets/images/phone.png' />";
+                        name += "<span style='font-family: font1;'>" + currentElement.brand.name + " " +
+                            currentElement.model + " imei:" + currentElement.imei + "</span>";
+                    }
+                    if (currentElement.type === 2) {
+                        type += "<img style='height: 20px' src='assets/images/lap.png' />";
+                        name += "<span style='font-family: font1;'>კომპ: " + currentElement.brandName + " " +
+                            currentElement.modelName + "</span>";
+                        name += "<span style='font-family: font1;'>მობილური: " + currentElement.brandName + " " +
+                            currentElement.modelName + "</span>";
+                    }
+                    if (currentElement.type === 4) {
+                        type += "<img style='height: 20px' src='assets/images/homeTech.png' />";
+                    }
+                    console.log(currentElement["createDate"]);
+                    var itemClass="";
+                    if(currentElement.status===1){
+                        itemClass="gridRowloanAddUz";
+                    }
+                    table.append("<tr value='" + i + "' class='"+itemClass+"'>" +
+                        "<td style='font-family: font1;'  class=''>" + type + " " + name + "</td>" +
+                        "<td style='font-family: font1;' class=''>" + currentElement["number"] + "</td>" +
+                        "<td style='font-family: font1;'  class=''>" + currentElement["sum"] + "</td>" +
+                        "<td style='font-family: font1;'  class=''>" + loanStatuses[currentElement["status"]] + "</td>" +
+                        "</tr>");
+                }
+
+                $(".gridRowloanAddUz").css('cursor', 'pointer').unbind().click(function () {
+                    modal.modal("hide");
+                    var elementId=dataArray[$(this).attr("value")].id;
+                    showModalWithTableInside(function(head,body,modal){
+                        dynamicCreateForm(body, "/addSumToInterest", {
+                            id: {
+                                type: "hidden",
+                                value: "" + elementId
+                            },
+                            sum: {
+                                type: "number",
+                                name: "დასამატებელი თანხა"
+                            }
+                        }, function () {
+                            modal.modal("hide");
+                            $.getJSON("/getloan/" + DOMElements.currentObj.id, function (result) {
+                                if (currentPage === 3)
+                                    loadLoansData(indexG, searchG, true);
+                                if (currentPage === 1)
+                                    DashInit()
+                                openLoanGlobal(result);
+                            });
+
+                        })
+                    },{},500)
+                })
+
+            }, {
+            }, 700);
         });
     if (!DOMElements.currentObj.closed && DOMElements.currentObj.overdue)
         createButtonWithHandlerr(DOMElements.loanDoActionsDiv, "ნივთების დაკავება", function () {

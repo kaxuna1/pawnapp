@@ -65,58 +65,61 @@ public class MobilePhoneController {
                               @RequestParam(value = "comment", required = true, defaultValue = "") String comment,
                               @RequestParam(value = "model", required = true, defaultValue = "") String model,
                               @RequestParam(value = "loan", required = true, defaultValue = "") long loan,
-                              @RequestParam(value = "sum", required = true, defaultValue = "0") float sum){
-        Session session=sessionRepository.findOne(sessionId);
-        if(session.isIsactive()&&
-                (session.getUser().getType()== UserType.lombardOperator.getCODE()
-                        ||session.getUser().getType()== UserType.lombardManager.getCODE())){
+                              @RequestParam(value = "sum", required = true, defaultValue = "0") float sum) {
+        Session session = sessionRepository.findOne(sessionId);
+        if (session.isIsactive() &&
+                (session.getUser().getType() == UserType.lombardOperator.getCODE()
+                        || session.getUser().getType() == UserType.lombardManager.getCODE())) {
             try {
-                MobilePhone mobilePhone=new MobilePhone(imei,mobileBrandRepo.findOne(brand),loanRepo.findOne(loan),comment,model,sum);
+                MobilePhone mobilePhone = new MobilePhone(imei, mobileBrandRepo.findOne(brand), loanRepo.findOne(loan), comment, model, sum);
                 mobilePhoneRepo.save(mobilePhone);
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 return new JsonMessage(JsonReturnCodes.ERROR.getCODE(), e.toString());
             }
             return new JsonMessage(JsonReturnCodes.Ok.getCODE(), "კლიენტი შეიქმნა წარმატებით");
 
 
-
-
-        }else {
-            return new JsonMessage(JsonReturnCodes.DONTHAVEPERMISSION.getCODE(),"არ გაქვთ ამ მოქმედების შესრულების უფლება");
+        } else {
+            return new JsonMessage(JsonReturnCodes.DONTHAVEPERMISSION.getCODE(), "არ გაქვთ ამ მოქმედების შესრულების უფლება");
         }
 
     }
+
     @RequestMapping("/getLoanPhones")
     @ResponseBody
     public List<Uzrunvelyofa> getLoanPhones(@CookieValue("projectSessionId") long sessionId,
-                                            @RequestParam(value = "loan", required = true, defaultValue = "0") long loan){
+                                            @RequestParam(value = "loan", required = true, defaultValue = "0") long loan) {
         Session session = sessionRepository.findOne(sessionId);
         Loan loanObj = loanRepo.findOne(loan);
         return loanObj.getUzrunvelyofas();
     }
+
     @RequestMapping("/getbrands/{type}")
     @ResponseBody
     public List<Brand> getBrands(@CookieValue("projectSessionId") long sessionId,
-                                 @PathVariable("type")int type){
-        int type2=0;
-        if(type==1||type==2)
-            type2=3;
-        if(type==0){
+                                 @PathVariable("type") int type) {
+        int type2 = 0;
+        if (type == 1 || type == 2)
+            type2 = 3;
+        if (type == 0) {
             return brandRepo.findAll();
         }
 
-        return brandRepo.findByTypeOrType(type,type2);
+        return brandRepo.findByTypeOrType(type, type2);
     }
+
     @RequestMapping("/getSinjebi")
     @ResponseBody
-    public List<Sinji> getSinjebi(){
+    public List<Sinji> getSinjebi() {
         return sinjiRepo.findAll();
     }
+
     private Pageable constructPageSpecification(int pageIndex) {
         Pageable pageSpecification = new PageRequest(pageIndex, 30);
         return pageSpecification;
     }
+
     @RequestMapping("/getdakavebulinivtebi")
     @ResponseBody
     public Page<Uzrunvelyofa> getConfiscated(@CookieValue("projectSessionId") long sessionId,
@@ -128,24 +131,24 @@ public class MobilePhoneController {
                                              @RequestParam(value = "gayiduli", required = true, defaultValue = "false") boolean gayiduli,
                                              @RequestParam(value = "free", required = true, defaultValue = "false") boolean free,
                                              @RequestParam(value = "taken", required = true, defaultValue = "false") boolean taken,
-                                             @RequestParam(value = "brand", required = true, defaultValue = "0") long brand){
-        List<Integer> statuses= new ArrayList<>();
+                                             @RequestParam(value = "brand", required = true, defaultValue = "0") long brand) {
+        List<Integer> statuses = new ArrayList<>();
 
-        if(datvirtuli)
+        if (datvirtuli)
             statuses.add(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
-        if(dakavebuli)
+        if (dakavebuli)
             statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
-        if(gasayidi)
+        if (gasayidi)
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
-        if(gayiduli)
+        if (gayiduli)
             statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
-        if(free) {
+        if (free) {
             statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
         }
-        if(taken) {
+        if (taken) {
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
         }
-        if(!datvirtuli&&!dakavebuli&&!gasayidi&&!gayiduli&&!free&&!taken){
+        if (!datvirtuli && !dakavebuli && !gasayidi && !gayiduli && !free && !taken) {
           /*  statuses.add(UzrunvelyofaStatusTypes.GAYIDULI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GASAYIDAD_GADAGZAVNILI.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.DAKAVEBULI.getCODE());
@@ -153,13 +156,10 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE());
             statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());*/
         }
-        List<Brand> brands=new ArrayList<>();
-        if(brand!=0){
+        List<Brand> brands = new ArrayList<>();
+        if (brand != 0) {
             brands.add(brandRepo.findOne(brand));
         }
-
-
-
 
 
         return uzrunvelyofaRepo.findForFilial(search,
@@ -172,10 +172,16 @@ public class MobilePhoneController {
     @ResponseBody
     public Page<Uzrunvelyofa> getByL(@RequestParam(value = "brand", required = true, defaultValue = "0") long brand,
                                      @RequestParam(value = "model", required = true, defaultValue = "") String model,
+                                     @RequestParam(value = "cpu", required = true, defaultValue = "") String cpu,
+                                     @RequestParam(value = "gpu", required = true, defaultValue = "") String gpu,
                                      @RequestParam(value = "name", required = true, defaultValue = "") String name,
                                      @RequestParam(value = "sinji", required = true, defaultValue = "0") long sinji,
                                      @RequestParam(value = "index", required = true, defaultValue = "0") int index,
                                      @RequestParam(value = "type", required = true, defaultValue = "0") int type,
+                                     @RequestParam(value = "mass", required = true, defaultValue = "0") float mass,
+                                     @RequestParam(value = "massOp", required = true, defaultValue = "1") int massOp,
+                                     @RequestParam(value = "hdd", required = true, defaultValue = "0") float hdd,
+                                     @RequestParam(value = "hddOp", required = true, defaultValue = "1") int hddOp,
                                      @CookieValue("projectSessionId") long sessionId,
                                      @RequestParam(value = "datvirtuli", required = true, defaultValue = "false") boolean datvirtuli,
                                      @RequestParam(value = "dakavebuli", required = true, defaultValue = "false") boolean dakavebuli,
@@ -191,12 +197,12 @@ public class MobilePhoneController {
         Specifications<Uzrunvelyofa> specifications = where(filialSpec(session.getUser().getFilial()));
         specifications = specifications.and(active());
 
-        if(brand!=0){
+        if (brand != 0) {
             List<Long> brands = new ArrayList<>();
             brands.add(brand);
             specifications = specifications.and(brand(brands, brandRepo));
         }
-        if(sinji!=0){
+        if (sinji != 0) {
             List<Long> sinjiIds = new ArrayList<>();
             sinjiIds.add(sinji);
             List<Sinji> sinjis = sinjiRepo.findByIdIn(sinjiIds);
@@ -205,11 +211,23 @@ public class MobilePhoneController {
         if (type != 0) {
             specifications = specifications.and(UzrunvelyofaSpecifications.typeSpec(type));
         }
-        if(!model.isEmpty()){
+        if (!model.isEmpty()) {
             specifications = specifications.and(UzrunvelyofaSpecifications.modelLike(model));
         }
-        if(!name.isEmpty()){
+        if (!cpu.isEmpty()) {
+            specifications = specifications.and(UzrunvelyofaSpecifications.cpuLike(cpu));
+        }
+        if (!gpu.isEmpty()) {
+            specifications = specifications.and(UzrunvelyofaSpecifications.gpuLike(gpu));
+        }
+        if (!name.isEmpty()) {
             specifications = specifications.and(UzrunvelyofaSpecifications.nameLike(name));
+        }
+        if (mass != 0) {
+            specifications = specifications.and(UzrunvelyofaSpecifications.mass(mass, massOp));
+        }
+        if (hdd != 0) {
+            specifications = specifications.and(UzrunvelyofaSpecifications.hddSpec(hdd, hddOp));
         }
         List<Integer> statuses = new ArrayList<>();
 

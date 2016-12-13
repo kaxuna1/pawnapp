@@ -11,6 +11,9 @@ import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
+import java.util.stream.Collector;
 
 /**
  * Created by kaxa on 11/29/16.
@@ -39,7 +42,7 @@ public class Uzrunvelyofa {
     private String ram;
 
     @Column
-    private String hdd;
+    private Float hdd;
     @Column
     private String gpu;
     @Column
@@ -57,7 +60,6 @@ public class Uzrunvelyofa {
 
     @Column
     private Float mass;
-
 
     @ManyToOne
     @JoinColumn(name = "loanId")
@@ -116,11 +118,11 @@ public class Uzrunvelyofa {
         this.ram = ram;
     }
 
-    public String getHdd() {
+    public Float getHdd() {
         return hdd;
     }
 
-    public void setHdd(String hdd) {
+    public void setHdd(Float hdd) {
         this.hdd = hdd;
     }
 
@@ -250,6 +252,29 @@ public class Uzrunvelyofa {
 
     public void setMass(Float mass) {
         this.mass = mass;
+    }
+    public boolean isReadyToFree(){
+        if(this.status!=UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
+            return false;
+
+
+        boolean readyToFree=true;
+        float loanSum=loan.getLoanSum();
+        float loanSumLeft=loan.getLeftSum();
+        float loanPercentToPay=loan.getInterestSumLeft();
+        float loanPayedSum=loanSum-loanSumLeft;
+        float usedSumFromLoanPayedSum= (float) (loan.getUzrunvelyofas()
+                        .stream()
+                        .filter(uzrunvelyofa -> uzrunvelyofa.status==UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE())
+                        .mapToDouble(value -> value.sum).sum());
+        float neadToBeMoreThanThis=usedSumFromLoanPayedSum+this.sum;
+        if(loanPercentToPay>0)
+            readyToFree=false;
+        if(loanPayedSum<neadToBeMoreThanThis){
+            readyToFree=false;
+        }
+
+        return readyToFree;
     }
 
     public Long getLoanId(){

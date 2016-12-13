@@ -19,6 +19,7 @@ import rx.functions.Func1;
 import javax.persistence.*;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -224,7 +225,7 @@ public class Loan {
                 }
             }
         });
-        return tempSum[0];
+        return tempSum[0]>=0?tempSum[0]:0;
     }
 
     public float getInterestSum() {
@@ -310,14 +311,11 @@ public class Loan {
     }
 
     private void checkStatus() {
-        if(this.getNextPaymentDate()==null||this.getNextPaymentDate().after(new Date())){
-            this.setStatus(LoanStatusTypes.ACTIVE.getCODE());
-            return;
-        }
-        if(this.getNextPaymentDate().before(new Date())){
-            this.setStatus(LoanStatusTypes.PAYMENT_LATE.getCODE());
-            return;
-        }
+       if(getOverdueInterests().size()>0){
+           this.setStatus(LoanStatusTypes.PAYMENT_LATE.getCODE());
+       }else{
+           this.setStatus(LoanStatusTypes.ACTIVE.getCODE());
+       }
     }
 
     public void addInterest() {
@@ -495,7 +493,7 @@ public class Loan {
 
     public boolean isOverdue() {
 
-        //TODO ახალი ლოგიკა დაგვიანებულის დასადგენად
+        //TODO ახალი ლოგიკა დაგვიანებულის დასადგენად LN3AB9716
         DateTime dateTime = new DateTime();
         DateTime dateTime1 = new DateTime();
         final boolean[] overdue = {false};
@@ -545,5 +543,21 @@ public class Loan {
 
     public List<Integer> getLoanUzrunvelyofaTypes(){
         return this.uzrunvelyofas.stream().map(Uzrunvelyofa::getType).distinct().sorted().collect(Collectors.toList());
+    }
+
+    public List<LoanInterest> getOverdueInterests(){
+        DateTime dateTime=new DateTime();
+        Calendar cal= Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.setTimeZone(TimeZone.getTimeZone("Asia/Tbilisi"));
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return loanInterests.stream()
+                .filter(loanInterest1 -> loanInterest1.isActive())
+                .filter(loanInterest2 -> !loanInterest2.isPayed())
+                .filter(loanInterest3 -> loanInterest3.getDueDate().before(cal.getTime()))
+                .collect(Collectors.toList());
     }
 }
