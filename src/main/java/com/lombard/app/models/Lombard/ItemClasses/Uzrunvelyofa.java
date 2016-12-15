@@ -4,12 +4,19 @@ package com.lombard.app.models.Lombard.ItemClasses;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lombard.app.StaticData;
 import com.lombard.app.models.Lombard.Dictionary.Brand;
+import com.lombard.app.models.Lombard.Dictionary.LoanCondition;
 import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.Loan;
+import com.lombard.app.models.Lombard.LoanInterest;
+import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
 import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement;
+import com.lombard.app.models.Lombard.TypeEnums.LoanConditionPeryodType;
+import com.lombard.app.models.Lombard.TypeEnums.MovementTypes;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
+import org.joda.time.DateTime;
 
 import javax.persistence.*;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
@@ -61,6 +68,10 @@ public class Uzrunvelyofa {
     @Column
     private Float mass;
 
+    @OneToMany(mappedBy = "uzrunvelyofa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<UzrunvelyofaInterest> uzrunvelyofaInterests;
+
     @ManyToOne
     @JoinColumn(name = "loanId")
     @JsonIgnore
@@ -68,6 +79,10 @@ public class Uzrunvelyofa {
 
     @Column
     private boolean active;
+
+    @ManyToOne
+    @JoinColumn(name = "loanConditionId")
+    private LoanCondition loanCondition;
 
 
     @ManyToOne
@@ -83,6 +98,51 @@ public class Uzrunvelyofa {
     private List<UzrunvelyofaMovement> uzrunvelyofaMovements;
 
     public Uzrunvelyofa() {
+
+    }
+
+    public void addInterest() {
+
+        DateTime dateTime = new DateTime();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.DAY.getCODE())
+            loan.nextInterestCalculationDate = dateTime.plusDays(loanCondition.getPeriod()).toDate();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.WEEK.getCODE())
+            loan.nextInterestCalculationDate = dateTime.plusWeeks(loanCondition.getPeriod()).toDate();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.MONTH.getCODE())
+            loan.nextInterestCalculationDate = dateTime.plusMonths(loanCondition.getPeriod()).toDate();
+        if (loan.onFirstInterest)
+            loan.nextInterestCalculationDate = new DateTime(loan.nextInterestCalculationDate).minusDays(1).toDate();
+
+        if(this.loanCondition.PercentLogical(loan.isOnFirstInterest())>0) {
+            UzrunvelyofaInterest loanInterest=                    new UzrunvelyofaInterest(this,
+                    (((this.getUzrunvelyofaLeftToPay()) / 100) * this.loanCondition.PercentLogical(loan.isOnFirstInterest())),
+                    this.loanCondition.PercentLogical(loan.isOnFirstInterest()), loan.nextInterestCalculationDate);
+            this.uzrunvelyofaInterests.add(loanInterest);
+        }
+    }
+    public void addFirstInterest() {
+        Date date = new Date();
+        DateTime dateTime = new DateTime();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.DAY.getCODE())
+            date = dateTime.plusDays(loanCondition.getPeriod()).toDate();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.WEEK.getCODE())
+            date = dateTime.plusWeeks(loanCondition.getPeriod()).toDate();
+        if (loanCondition.getPeriodType() == LoanConditionPeryodType.MONTH.getCODE())
+            date = dateTime.plusMonths(loanCondition.getPeriod()).toDate();
+        if (this.getLoanCondition().getFirstDayPercent() > 0) {
+
+            float sum = ((getUzrunvelyofaLeftToPay() / 100) * this.loanCondition.getFirstDayPercent());
+            UzrunvelyofaInterest interest = new UzrunvelyofaInterest(this,
+                    sum,
+                    this.loanCondition.getFirstDayPercent(), date);
+            this.uzrunvelyofaInterests.add(interest);
+            loan.movements.add(new LoanMovement("დაეკისრა პროცენტი " + sum + "ლარი", MovementTypes.LOAN_INTEREST_GENERATED.getCODE(), this.loan));
+        }
+        if (this.getLoanCondition().getPercent() == this.getLoanCondition().getFirstDayPercent()) {
+            loan.nextInterestCalculationDate = date;
+        } else {
+            loan.nextInterestCalculationDate = new DateTime().plusDays(1).toDate();
+        }
 
     }
 
@@ -253,6 +313,7 @@ public class Uzrunvelyofa {
     public void setMass(Float mass) {
         this.mass = mass;
     }
+
     public boolean isReadyToFree(){
         if(this.status!=UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
             return false;
@@ -289,5 +350,25 @@ public class Uzrunvelyofa {
     public Float getPayedSum(){
         Float loanPaymentSum = StaticData.loanPaymentRepo.findLoanPaymentSum(this.loan);
         return loanPaymentSum==null?0:loanPaymentSum;
+    }
+
+    public List<UzrunvelyofaInterest> getUzrunvelyofaInterests() {
+        return uzrunvelyofaInterests;
+    }
+
+    public float getUzrunvelyofaLeftToPay(){
+        return (this.sum/100)*(loan.getLeftSum()/(loan.getLoanSum()/100));
+    }
+
+    public void setUzrunvelyofaInterests(List<UzrunvelyofaInterest> uzrunvelyofaInterests) {
+        this.uzrunvelyofaInterests = uzrunvelyofaInterests;
+    }
+
+    public LoanCondition getLoanCondition() {
+        return loanCondition;
+    }
+
+    public void setLoanCondition(LoanCondition loanCondition) {
+        this.loanCondition = loanCondition;
     }
 }

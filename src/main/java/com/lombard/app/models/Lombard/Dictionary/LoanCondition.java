@@ -3,6 +3,7 @@ package com.lombard.app.models.Lombard.Dictionary;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lombard.app.models.Filial;
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.TypeEnums.LoanConditionPeryodType;
 
@@ -37,7 +38,7 @@ public class LoanCondition {
 
     @JsonIgnore
     @OneToMany(mappedBy = "loanCondition",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<Loan> loans;
+    private List<Uzrunvelyofa> uzrunvelyofas;
 
     @ManyToOne
     @JoinColumn(name = "filialId")
@@ -95,12 +96,12 @@ public class LoanCondition {
         this.periodType = periodType;
     }
 
-    public List<Loan> getLoans() {
-        return loans;
+    public List<Uzrunvelyofa> getLoans() {
+        return uzrunvelyofas;
     }
 
-    public void setLoans(List<Loan> loans) {
-        this.loans = loans;
+    public void setLoans(List<Uzrunvelyofa> uzrunvelyofas) {
+        this.uzrunvelyofas = uzrunvelyofas;
     }
 
     public Filial getFilial() {
