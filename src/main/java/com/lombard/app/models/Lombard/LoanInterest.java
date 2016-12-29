@@ -1,9 +1,11 @@
 package com.lombard.app.models.Lombard;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by kaxa on 11/24/16.
@@ -140,7 +142,4 @@ public class LoanInterest {
         }
     }
 
-    public void addToPayedSum(float val) {
-        this.payedSum+=val;
-    }
 }

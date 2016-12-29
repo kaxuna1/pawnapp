@@ -2,12 +2,10 @@ package com.lombard.app.scheduledtasks;
 
 
 import com.lombard.app.Repositorys.FilialRepository;
-import com.lombard.app.Repositorys.Lombard.ClientsRepo;
-import com.lombard.app.Repositorys.Lombard.LoanInterestRepo;
-import com.lombard.app.Repositorys.Lombard.LoanPaymentRepo;
-import com.lombard.app.Repositorys.Lombard.LoanRepo;
+import com.lombard.app.Repositorys.Lombard.*;
 import com.lombard.app.StaticData;
 import com.lombard.app.models.Filial;
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.LoanPayment;
@@ -51,15 +49,13 @@ public class ScheduledTasks {
         //log.info(cal.getTime().toString());
 
 
-        List<Loan> loanList =
-                loanRepo.
-                        findByIsActiveAndClosedAndNextInterestCalculationDateBetween(true,
-                                false,
-                                cal.getTime(),
+        List<Uzrunvelyofa> uzrunvelyofaList =
+                uzrunvelyofaRepo.
+                        getForInterestAdding(cal.getTime(),
                                 new DateTime(cal.getTime().getTime()).plusDays(1).toDate());
-        loanList.forEach(Loan::addInterest);
-        loanRepo.save(loanList);
-        loanList.forEach(StaticData::mapLoan);
+        uzrunvelyofaList.forEach(Uzrunvelyofa::addInterest);
+        uzrunvelyofaRepo.save(uzrunvelyofaList);
+        uzrunvelyofaList.forEach(uzrunvelyofa -> StaticData.mapLoan(uzrunvelyofa.getLoan()));
     }
 
     private boolean runOnce = true;
@@ -76,9 +72,9 @@ public class ScheduledTasks {
             StaticData.loanPaymentRepo = this.loanPaymentRepo;
             staticReposReady = true;
             runOnce = false;
-            filialRepository.findAll().stream().filter(Filial::isActive)
-                    .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
-                            .stream().forEach(StaticData::mapLoan));
+            //filialRepository.findAll().stream().filter(Filial::isActive)
+              //      .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
+                //            .stream().forEach(StaticData::mapLoan));
             log.info("initFinish");
         }
     }
@@ -119,4 +115,6 @@ public class ScheduledTasks {
     private LoanPaymentRepo loanPaymentRepo;
     @Autowired
     private LoanInterestRepo loanInterestRepo;
+    @Autowired
+    private UzrunvelyofaRepo uzrunvelyofaRepo;
 }

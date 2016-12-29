@@ -8,14 +8,19 @@ import com.lombard.app.models.Lombard.Dictionary.LoanCondition;
 import com.lombard.app.models.Lombard.Dictionary.Sinji;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
+import com.lombard.app.models.Lombard.LoanPayment;
 import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
 import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement;
 import com.lombard.app.models.Lombard.TypeEnums.LoanConditionPeryodType;
+import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
 import com.lombard.app.models.Lombard.TypeEnums.MovementTypes;
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.joda.time.DateTime;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
@@ -35,6 +40,10 @@ public class Uzrunvelyofa {
     @Column(name = "uzrunvelyofaId")
     private long id;
 
+    @LazyCollection(LazyCollectionOption.FALSE)
+    @OneToMany(mappedBy = "uzrunvelyofa", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<LoanPayment> payments;
 
     @Column
     private String model;
@@ -80,8 +89,16 @@ public class Uzrunvelyofa {
     @Column
     private boolean active;
 
+    @Column
+    private Date nextInterestCalculationDate;
+
+    @Column
+    private boolean onFirstInterest;
+
+
     @ManyToOne
     @JoinColumn(name = "loanConditionId")
+    @JsonIgnore
     private LoanCondition loanCondition;
 
 
@@ -102,25 +119,31 @@ public class Uzrunvelyofa {
     }
 
     public void addInterest() {
+        if(this.status!=UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
+            return;
 
         DateTime dateTime = new DateTime();
         if (loanCondition.getPeriodType() == LoanConditionPeryodType.DAY.getCODE())
-            loan.nextInterestCalculationDate = dateTime.plusDays(loanCondition.getPeriod()).toDate();
+            this.nextInterestCalculationDate = dateTime.plusDays(loanCondition.getPeriod()).toDate();
         if (loanCondition.getPeriodType() == LoanConditionPeryodType.WEEK.getCODE())
-            loan.nextInterestCalculationDate = dateTime.plusWeeks(loanCondition.getPeriod()).toDate();
+            this.nextInterestCalculationDate = dateTime.plusWeeks(loanCondition.getPeriod()).toDate();
         if (loanCondition.getPeriodType() == LoanConditionPeryodType.MONTH.getCODE())
-            loan.nextInterestCalculationDate = dateTime.plusMonths(loanCondition.getPeriod()).toDate();
-        if (loan.onFirstInterest)
-            loan.nextInterestCalculationDate = new DateTime(loan.nextInterestCalculationDate).minusDays(1).toDate();
+            this.nextInterestCalculationDate = dateTime.plusMonths(loanCondition.getPeriod()).toDate();
+        if (this.onFirstInterest)
+            this.nextInterestCalculationDate = new DateTime(this.nextInterestCalculationDate).minusDays(1).toDate();
 
-        if(this.loanCondition.PercentLogical(loan.isOnFirstInterest())>0) {
-            UzrunvelyofaInterest loanInterest=                    new UzrunvelyofaInterest(this,
-                    (((this.getUzrunvelyofaLeftToPay()) / 100) * this.loanCondition.PercentLogical(loan.isOnFirstInterest())),
-                    this.loanCondition.PercentLogical(loan.isOnFirstInterest()), loan.nextInterestCalculationDate);
+        if (this.loanCondition.PercentLogical(this.isOnFirstInterest()) > 0) {
+            UzrunvelyofaInterest loanInterest = new UzrunvelyofaInterest(this,
+                    (((this.getLeftToPay()) / 100) * this.loanCondition.PercentLogical(this.isOnFirstInterest())),
+                    this.loanCondition.PercentLogical(this.isOnFirstInterest()), this.nextInterestCalculationDate);
             this.uzrunvelyofaInterests.add(loanInterest);
         }
+        this.onFirstInterest=false;
     }
+
     public void addFirstInterest() {
+        if(this.status!=UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
+            return;
         Date date = new Date();
         DateTime dateTime = new DateTime();
         if (loanCondition.getPeriodType() == LoanConditionPeryodType.DAY.getCODE())
@@ -131,17 +154,20 @@ public class Uzrunvelyofa {
             date = dateTime.plusMonths(loanCondition.getPeriod()).toDate();
         if (this.getLoanCondition().getFirstDayPercent() > 0) {
 
-            float sum = ((getUzrunvelyofaLeftToPay() / 100) * this.loanCondition.getFirstDayPercent());
-            UzrunvelyofaInterest interest = new UzrunvelyofaInterest(this,
-                    sum,
-                    this.loanCondition.getFirstDayPercent(), date);
+
+            float sum = ((getLeftToPay() / 100) * this.loanCondition.getFirstDayPercent());
+
+            UzrunvelyofaInterest interest = new UzrunvelyofaInterest(this, sum, this.loanCondition.getFirstDayPercent(), date);
+
             this.uzrunvelyofaInterests.add(interest);
+
+
             loan.movements.add(new LoanMovement("დაეკისრა პროცენტი " + sum + "ლარი", MovementTypes.LOAN_INTEREST_GENERATED.getCODE(), this.loan));
         }
         if (this.getLoanCondition().getPercent() == this.getLoanCondition().getFirstDayPercent()) {
-            loan.nextInterestCalculationDate = date;
+            this.nextInterestCalculationDate = date;
         } else {
-            loan.nextInterestCalculationDate = new DateTime().plusDays(1).toDate();
+            this.nextInterestCalculationDate = new DateTime().plusDays(1).toDate();
         }
 
     }
@@ -314,51 +340,37 @@ public class Uzrunvelyofa {
         this.mass = mass;
     }
 
-    public boolean isReadyToFree(){
-        if(this.status!=UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
+    public boolean isReadyToFree() {
+        if (this.status != UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
             return false;
-
-
-        boolean readyToFree=true;
-        float loanSum=loan.getLoanSum();
-        float loanSumLeft=loan.getLeftSum();
-        float loanPercentToPay=loan.getInterestSumLeft();
-        float loanPayedSum=loanSum-loanSumLeft;
-        float usedSumFromLoanPayedSum= (float) (loan.getUzrunvelyofas()
-                        .stream()
-                        .filter(uzrunvelyofa -> uzrunvelyofa.status==UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.getCODE())
-                        .mapToDouble(value -> value.sum).sum());
-        float neadToBeMoreThanThis=usedSumFromLoanPayedSum+this.sum;
-        if(loanPercentToPay>0)
-            readyToFree=false;
-        if(loanPayedSum<neadToBeMoreThanThis){
-            readyToFree=false;
-        }
-
-        return readyToFree;
+        return this.getLeftToPay() <= 0 && this.getInterestsLeftToPay() <= 0;
     }
 
-    public Long getLoanId(){
+    public float getInterestsLeftToPay() {
+        return (float) this.uzrunvelyofaInterests.stream().filter(u -> !u.isPayed()).mapToDouble(UzrunvelyofaInterest::getLeftToPay).sum();
+    }
+
+    public Long getLoanId() {
         return loan.getId();
     }
-    public String getLoanNumber(){
+
+    public String getLoanNumber() {
         return loan.getNumber();
     }
-    public Float  getAddedSum(){
+
+    public Float getAddedSum() {
         return StaticData.loanInterestRepo.findLoanInterestSum(this.loan);
     }
-    public Float getPayedSum(){
-        Float loanPaymentSum = StaticData.loanPaymentRepo.findLoanPaymentSum(this.loan);
-        return loanPaymentSum==null?0:loanPaymentSum;
+
+    public Float getPayedSum() {
+        double loanPaymentSum = this.payments.stream().mapToDouble(LoanPayment::getSum).sum();
+        return (float) loanPaymentSum;
     }
 
     public List<UzrunvelyofaInterest> getUzrunvelyofaInterests() {
         return uzrunvelyofaInterests;
     }
 
-    public float getUzrunvelyofaLeftToPay(){
-        return (this.sum/100)*(loan.getLeftSum()/(loan.getLoanSum()/100));
-    }
 
     public void setUzrunvelyofaInterests(List<UzrunvelyofaInterest> uzrunvelyofaInterests) {
         this.uzrunvelyofaInterests = uzrunvelyofaInterests;
@@ -370,5 +382,56 @@ public class Uzrunvelyofa {
 
     public void setLoanCondition(LoanCondition loanCondition) {
         this.loanCondition = loanCondition;
+    }
+
+    public void paySum(float sum) {
+        LoanPayment loanPayment = new LoanPayment(this.loan, sum, LoanPaymentType.PARTIAL.getCODE());
+        loanPayment.setUzrunvelyofa(this);
+        this.payments.add(loanPayment);
+    }
+
+    public float getLeftToPay() {
+        return this.sum -
+                (float) this.payments.stream().filter(loanPayment -> loanPayment.getType() == LoanPaymentType.PARTIAL.getCODE())
+
+                        .mapToDouble(LoanPayment::getSum).sum();
+    }
+
+    public void payInt(float sum) {
+        LoanPayment loanPayment = new LoanPayment(this.loan, sum, LoanPaymentType.PERCENT.getCODE());
+        loanPayment.setUzrunvelyofa(this);
+        loan.getPayments().add(loanPayment);
+        loan.recalculateInterestPayments();
+    }
+
+    public Date getNextInterestCalculationDate() {
+        return nextInterestCalculationDate;
+    }
+
+    public void setNextInterestCalculationDate(Date nextInterestCalculationDate) {
+        this.nextInterestCalculationDate = nextInterestCalculationDate;
+    }
+
+    public boolean isOnFirstInterest() {
+        return onFirstInterest;
+    }
+
+    public void setOnFirstInterest(boolean onFirstInterest) {
+        this.onFirstInterest = onFirstInterest;
+    }
+
+    public void initLists(){
+        this.payments=new ArrayList<>();
+        this.uzrunvelyofaInterests=new ArrayList<>();
+        this.uzrunvelyofaMovements=new ArrayList<>();
+    }
+    public boolean isOverDue(){
+        return this.uzrunvelyofaInterests.stream().filter(UzrunvelyofaInterest::isOverDue).count()>0;
+    }
+    public float getOverDueInterestSum(){
+        return (float)this.uzrunvelyofaInterests.stream()
+                .filter(UzrunvelyofaInterest::isOverDue)
+                .mapToDouble(UzrunvelyofaInterest::getLeftToPay)
+                .sum();
     }
 }

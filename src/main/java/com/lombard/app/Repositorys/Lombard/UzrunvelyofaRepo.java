@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,4 +35,12 @@ public interface UzrunvelyofaRepo extends JpaRepository<Uzrunvelyofa,Long>,JpaSp
             "l in (select l from l where l.isActive=true and l.client=:client) and u.active=true order by l.createDate desc ")
     Page<Uzrunvelyofa> findClientsUzrunvelyofa( @Param("client") Client client,  Pageable constructPageSpecification);
 
+
+    @Query("select u from Uzrunvelyofa u join u.loan l where " +
+            "l.isActive=true " +
+            "and l.closed=false " +
+            "and u.nextInterestCalculationDate between :fromD and :toD")
+    List<Uzrunvelyofa> getForInterestAdding(
+                                            @Param("fromD")Date nextInterestCalculationDateStart,
+                                            @Param("toD")Date nextInterestCalculationDateEnd);
 }

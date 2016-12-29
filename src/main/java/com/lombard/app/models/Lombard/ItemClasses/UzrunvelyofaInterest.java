@@ -3,14 +3,16 @@ package com.lombard.app.models.Lombard.ItemClasses;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Created by kakha on 12/15/2016.
  */
 @Entity
-@Table(name = "LoanInterests",indexes = {
-        @Index(name = "loanIdIndex",columnList = "loanId",unique = false),
+@Table(name = "UzrunvelyofaInterest",indexes = {
+        @Index(name = "uzIdIndex",columnList = "uzrunvelyofaId",unique = false),
         @Index(name = "activeIndex",columnList = "active",unique = false),
         @Index(name = "dateIndex",columnList = "createDate",unique = false)
 
@@ -53,7 +55,9 @@ public class UzrunvelyofaInterest {
         this.sum = sum;
         this.percent = percent;
         this.dueDate = dueDate;
+        this.createDate=new Date();
     }
+    public UzrunvelyofaInterest(){}
 
     public long getId() {
         return id;
@@ -128,6 +132,18 @@ public class UzrunvelyofaInterest {
     }
     public float getLeftToPay(){
         return this.sum-this.payedSum;
+    }
+
+    public boolean isOverDue(){
+        Calendar cal = Calendar.getInstance(); // locale-specific
+        cal.setTime(new Date());
+        cal.setTimeZone(TimeZone.getTimeZone("Asia/Tbilisi"));
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return dueDate.before(cal.getTime())&&!payed;
+
     }
 
     public void checkIfIsPayed() {

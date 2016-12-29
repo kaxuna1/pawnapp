@@ -16,6 +16,7 @@ import com.lombard.app.models.Filial;
 import com.lombard.app.models.JsonMessage;
 import com.lombard.app.models.Lombard.Client;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
+import com.lombard.app.models.Lombard.ItemClasses.UzrunvelyofaInterest;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
@@ -81,6 +82,8 @@ public class LoanController {
     private UzrunvelyofaRepo uzrunvelyofaRepo;
     @Autowired
     private SinjiRepo sinjiRepo;
+    @Autowired
+    private UzrunvelyofaInterestRepo uzrunvelyofaInterestRepo;
 
     @RequestMapping("/send")
     @ResponseBody
@@ -265,30 +268,33 @@ public class LoanController {
                 JsonArray homeTechJson = mainObject.getAsJsonArray("homeTech");
                 JsonArray otherJson = mainObject.getAsJsonArray("other");
 
-                long conditionId = mainObject.get("condition").getAsLong();
+
                 long clientId = clientObject.get("id").getAsLong();
 
 
                 for (int i = 0; i < mobiles.size(); i++) {
                     JsonObject mobile = mobiles.get(i).getAsJsonObject();
                     Uzrunvelyofa mobilePhoneTemp = new Uzrunvelyofa();
-                    mobilePhoneTemp.setUzrunvelyofaMovements(new ArrayList<>());
+
                     mobilePhoneTemp.setSum(mobile.get("sum").getAsFloat());
                     mobilePhoneTemp.setActive(true);
                     mobilePhoneTemp.setComment(mobile.get("comment").getAsString());
                     mobilePhoneTemp.setIMEI(mobile.get("imei").getAsString());
                     mobilePhoneTemp.setLoan(null);
+                    mobilePhoneTemp.setOnFirstInterest(true);
                     mobilePhoneTemp.setType(UzrunvelyofaTypes.MOBILE.getCODE());
                     mobilePhoneTemp.setModel(mobile.get("model").getAsString());
                     mobilePhoneTemp.setBrand(brandRepo.findOne(mobile.get("brand").getAsLong()));
                     mobilePhoneTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
+                    mobilePhoneTemp.setLoanCondition(loanConditionsRepo.findOne(mobile.get("condition").getAsLong()));
+
                     uzrunvelyofas.add(mobilePhoneTemp);
                     loanSum += mobile.get("sum").getAsFloat();
                 }
                 for (int i = 0; i < laptopsJson.size(); i++) {
                     JsonObject laptop = laptopsJson.get(i).getAsJsonObject();
                     Uzrunvelyofa laptopTemp = new Uzrunvelyofa();
-                    laptopTemp.setUzrunvelyofaMovements(new ArrayList<>());
+
                     laptopTemp.setActive(true);
                     laptopTemp.setBrand(brandRepo.findOne(laptop.get("brand").getAsLong()));
                     laptopTemp.setModel(laptop.get("model").getAsString());
@@ -299,14 +305,17 @@ public class LoanController {
                     laptopTemp.setType(UzrunvelyofaTypes.LAPTOP.getCODE());
                     laptopTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     laptopTemp.setSum(laptop.get("sum").getAsFloat());
+                    laptopTemp.setOnFirstInterest(true);
+                    laptopTemp.setLoanCondition(loanConditionsRepo.findOne(laptop.get("condition").getAsLong()));
                     laptopTemp.setComment(laptop.get("comment").getAsString());
+
                     loanSum += laptop.get("sum").getAsFloat();
                     uzrunvelyofas.add(laptopTemp);
                 }
                 for (int i = 0; i < goldJson.size(); i++) {
                     JsonObject gold = goldJson.get(i).getAsJsonObject();
                     Uzrunvelyofa goldTemp = new Uzrunvelyofa();
-                    goldTemp.setUzrunvelyofaMovements(new ArrayList<>());
+
                     goldTemp.setActive(true);
                     goldTemp.setType(UzrunvelyofaTypes.GOLD.getCODE());
                     goldTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
@@ -314,28 +323,34 @@ public class LoanController {
                     goldTemp.setSinji(sinjiRepo.findOne(gold.get("sinji").getAsLong()));
                     goldTemp.setMass(gold.get("mass").getAsFloat());
                     goldTemp.setSum(gold.get("sum").getAsFloat());
+                    goldTemp.setOnFirstInterest(true);
                     goldTemp.setComment(gold.get("comment").getAsString());
+                    goldTemp.setLoanCondition(loanConditionsRepo.findOne(gold.get("condition").getAsLong()));
+
                     loanSum += gold.get("sum").getAsFloat();
                     uzrunvelyofas.add(goldTemp);
                 }
                 for (int i = 0; i < otherJson.size(); i++) {
                     JsonObject other = otherJson.get(i).getAsJsonObject();
                     Uzrunvelyofa otherTemp = new Uzrunvelyofa();
-                    otherTemp.setUzrunvelyofaMovements(new ArrayList<>());
+
                     otherTemp.setActive(true);
                     otherTemp.setBrand(brandRepo.findOne(other.get("brand").getAsLong()));
                     otherTemp.setModel(other.get("model").getAsString());
                     otherTemp.setType(UzrunvelyofaTypes.OTHER.getCODE());
                     otherTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     otherTemp.setSum(other.get("sum").getAsFloat());
+                    otherTemp.setOnFirstInterest(true);
                     otherTemp.setComment(other.get("comment").getAsString());
+                    otherTemp.setLoanCondition(loanConditionsRepo.findOne(other.get("condition").getAsLong()));
+
                     loanSum += other.get("sum").getAsFloat();
                     uzrunvelyofas.add(otherTemp);
                 }
                 for (int i = 0; i < homeTechJson.size(); i++) {
                     JsonObject other = homeTechJson.get(i).getAsJsonObject();
                     Uzrunvelyofa homeTechTemp = new Uzrunvelyofa();
-                    homeTechTemp.setUzrunvelyofaMovements(new ArrayList<>());
+
                     homeTechTemp.setActive(true);
                     homeTechTemp.setBrand(brandRepo.findOne(other.get("brand").getAsLong()));
                     homeTechTemp.setModel(other.get("model").getAsString());
@@ -343,7 +358,10 @@ public class LoanController {
                     homeTechTemp.setType(UzrunvelyofaTypes.HOMETECH.getCODE());
                     homeTechTemp.setStatus(UzrunvelyofaStatusTypes.DATVIRTULI.getCODE());
                     homeTechTemp.setSum(other.get("sum").getAsFloat());
+                    homeTechTemp.setOnFirstInterest(true);
                     homeTechTemp.setComment(other.get("comment").getAsString());
+                    homeTechTemp.setLoanCondition(loanConditionsRepo.findOne(other.get("condition").getAsLong()));
+
                     loanSum += other.get("sum").getAsFloat();
                     uzrunvelyofas.add(homeTechTemp);
                 }
@@ -351,7 +369,7 @@ public class LoanController {
 
                 Loan loan = new Loan(clientsRepo.findOne(clientId),
                         session.getUser().getFilial(), loanSum, session.getUser());
-                loan.setLoanCondition(loanConditionsRepo.findOne(conditionId));
+                //loan.setLoanCondition(loanConditionsRepo.findOne(conditionId));
                 loan.setStatus(LoanStatusTypes.ACTIVE.getCODE());
                 loan = loanRepo.save(loan);
                 long id = loan.getId();
@@ -359,11 +377,13 @@ public class LoanController {
                 loan.setNumber("LN" + StaticData.hashids.encode(id) + year);
                 final Loan finalLoan = loan;
                 uzrunvelyofas.forEach(uzrunvelyofa -> uzrunvelyofa.setLoan(finalLoan));
+                uzrunvelyofas.forEach(Uzrunvelyofa::initLists);
                 uzrunvelyofas = uzrunvelyofaRepo.save(uzrunvelyofas);
                 uzrunvelyofas.forEach(uzrunvelyofa -> uzrunvelyofa.setNumber("LP" + StaticData.hashids.encode(uzrunvelyofa.getId() + year)));
                 uzrunvelyofas = uzrunvelyofaRepo.save(uzrunvelyofas);
                 LoanMovement loanMovement = new LoanMovement("სესხი დარეგისტრირდა", MovementTypes.REGISTERED.getCODE(), loan);
                 loanMovementsRepo.save(loanMovement);
+                loan.setUzrunvelyofas(uzrunvelyofas);
                 loan.addFirstInterest();
                 loanRepo.save(loan);
                 StaticData.mapLoan(loan);
@@ -410,7 +430,7 @@ public class LoanController {
 
                         Loan loan = new Loan(clientsRepo.findOne(client.getId()),
                                 session.getUser().getFilial(), sum, session.getUser());
-                        loan.setLoanCondition(loanConditionsRepo.findOne(1L));
+                        //loan.setLoanCondition(loanConditionsRepo.findOne(1L));
                         loan = loanRepo.save(loan);
                         long id = loan.getId();
                         int year = new DateTime().getYear() - 2000;
@@ -433,6 +453,7 @@ public class LoanController {
         });
         return true;
     }
+
 
     @RequestMapping("/getsumforloanclosing/{id}")
     @ResponseBody
@@ -458,7 +479,7 @@ public class LoanController {
 
     @RequestMapping("/getloaninterests/{id}")
     @ResponseBody
-    public List<LoanInterest> getLoanInterests(@CookieValue("projectSessionId") long sessionId, @PathVariable("id") long id) {
+    public List<UzrunvelyofaInterest> getLoanInterests(@CookieValue("projectSessionId") long sessionId, @PathVariable("id") long id) {
         Session session = sessionRepository.findOne(sessionId);
         Loan loan = loanRepo.findOne(id);
         return loan.getLoanInterests();

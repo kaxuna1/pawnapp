@@ -1,6 +1,7 @@
 package com.lombard.app.models.Lombard;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
 
 
@@ -27,6 +28,12 @@ public class LoanPayment {
     @JoinColumn(name = "loanId")
     @JsonIgnore
     private Loan loan;
+
+    @ManyToOne
+    @JoinColumn(name = "uzrunvelyofaId")
+    @JsonIgnore
+    private Uzrunvelyofa uzrunvelyofa;
+
 
     @Column
     private float sum;
@@ -147,5 +154,15 @@ public class LoanPayment {
 
     public String getLoanNumber(){
         return loan.getNumber();
+    }
+
+
+
+    public Uzrunvelyofa getUzrunvelyofa() {
+        return uzrunvelyofa;
+    }
+
+    public void setUzrunvelyofa(Uzrunvelyofa uzrunvelyofa) {
+        this.uzrunvelyofa = uzrunvelyofa;
     }
 }

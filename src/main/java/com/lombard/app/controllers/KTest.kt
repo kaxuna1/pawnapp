@@ -39,7 +39,8 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                            val sessionRepo: SessionRepository,
                            val interestsRepo: LoanInterestRepo,
                            val paymentRepo: LoanPaymentRepo,
-                           val uzrunvelyofaRepo: UzrunvelyofaRepo) {
+                           val uzrunvelyofaRepo: UzrunvelyofaRepo,
+                           val clientsRepo: ClientsRepo) {
 
     private val log = LoggerFactory.getLogger(LoanControllerKotlin::class.java)
 
@@ -50,8 +51,51 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         val loan = loanRepo.findOne(id)
         loan.addInterest()
         loanRepo.save(loan)
-        StaticData.mapLoan(loan)
+        //StaticData.mapLoan(loan)
         return JsonMessage(JsonReturnCodes.Ok.code, "ok")
+    }
+
+
+    @GetMapping("payUzrunvelyofaSum")
+    fun payUzrunvelyofaSum(@CookieValue("projectSessionId") sessionId: Long, id: Long, sum: Float): Any {
+        val session = sessionRepo.findOne(sessionId);
+        if (session.isIsactive) {
+            var uzrunvelyo = uzrunvelyofaRepo.findOne(id);
+            if (session.user.filial.id == uzrunvelyo.loan.filial.id) {
+                if (uzrunvelyo.leftToPay >= sum && sum > 0) {
+                    uzrunvelyo.paySum(sum);
+                    uzrunvelyofaRepo.save(uzrunvelyo);
+                    return mapOf("code" to JsonReturnCodes.Ok.code)
+                } else {
+                    return mapOf("code" to JsonReturnCodes.LOGICERROR.code)
+                }
+            } else {
+                return mapOf("code" to JsonReturnCodes.DONTHAVEPERMISSION.code)
+            }
+        } else {
+            return mapOf("code" to JsonReturnCodes.SESSIONEXPIRED.code)
+        }
+    }
+
+    @GetMapping("payUzrunvelyofaInt")
+    fun payUzrunvelyofaInt(@CookieValue("projectSessionId") sessionId: Long, id: Long, sum: Float): Any {
+        val session = sessionRepo.findOne(sessionId);
+        if (session.isIsactive) {
+            var uzrunvelyo = uzrunvelyofaRepo.findOne(id);
+            if (session.user.filial.id == uzrunvelyo.loan.filial.id) {
+                if (sum > 0) {
+                    uzrunvelyo.payInt(sum);
+                    uzrunvelyofaRepo.save(uzrunvelyo);
+                    return mapOf("code" to JsonReturnCodes.Ok.code)
+                } else {
+                    return mapOf("code" to JsonReturnCodes.LOGICERROR.code)
+                }
+            } else {
+                return mapOf("code" to JsonReturnCodes.DONTHAVEPERMISSION.code)
+            }
+        } else {
+            return mapOf("code" to JsonReturnCodes.SESSIONEXPIRED.code)
+        }
     }
 
     @GetMapping("/ktl/{t}")
@@ -351,7 +395,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
             val session = sessionRepo.findOne(sessionId);
             var uz = uzrunvelyofaRepo.findOne(id);
             if (session.isIsactive && uz.isActive &&
-                    uz.loan.filial.id == session.user.filial.id &&( uz.status == UzrunvelyofaStatusTypes.GATAVISUFLEBULI.code||uz.isReadyToFree)
+                    uz.loan.filial.id == session.user.filial.id && ( uz.status == UzrunvelyofaStatusTypes.GATAVISUFLEBULI.code || uz.isReadyToFree)
 
             ) {
                 uz.status = UzrunvelyofaStatusTypes.GATANILI_PATRONIS_MIER.code
@@ -384,18 +428,57 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                 uzrunvelyofa.loan.loanSum = uzrunvelyofa.loan.loanSum + sum
                 uzrunvelyofaRepo.save(uzrunvelyofa);
                 return mapOf("code" to JsonReturnCodes.Ok.code);
-            }catch(e:Exception){
+            } catch(e: Exception) {
                 e.printStackTrace();
                 return mapOf("code" to JsonReturnCodes.ERROR.code);
             }
-        }else{
+        } else {
             return mapOf("code" to JsonReturnCodes.DONTHAVEPERMISSION.code);
         }
 
     }
 
+    @RequestMapping("/closeLoanWithPayment/{id}")
+    @ResponseBody
+    fun closeLoanWithPayment(@CookieValue("projectSessionId") sessionId: Long, @PathVariable("id") id: Long): Any {
+
+        val session = sessionRepo.findOne(sessionId);
+        val loan: Loan = loanRepo.findOne(id);
+        if (session.isIsactive && loan.filial.id == session.user.filial.id && loan.status == LoanStatusTypes.ACTIVE.code) {
+            try {
+
+                loan.uzrunvelyofas.filter {
+                    uz->
+                    uz.status==UzrunvelyofaStatusTypes.DATVIRTULI.code
+                }.forEach {
+                    uz ->
+
+                    uz.payInt(uz.interestsLeftToPay)
+                    uz.paySum(uz.leftToPay)
+                }
+                loan.recalculateInterestPayments()
+
+                loanRepo.save(loan);
+
+
+
+
+                return mapOf("code" to JsonReturnCodes.Ok.code)
+            } catch(e: Exception) {
+
+                e.printStackTrace()
+                return mapOf("code" to JsonReturnCodes.ERROR.code)
+            }
+
+
+        } else {
+            return mapOf("code" to JsonReturnCodes.DONTHAVEPERMISSION.code)
+        }
+    }
 
     private fun constructPageSpecification(pageIndex: Int, size: Int): Pageable {
         return PageRequest(pageIndex, size)
     }
+
+
 }

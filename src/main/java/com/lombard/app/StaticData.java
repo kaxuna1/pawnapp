@@ -5,6 +5,7 @@ import com.lombard.app.Repositorys.Lombard.LoanInterestRepo;
 import com.lombard.app.Repositorys.Lombard.LoanPaymentRepo;
 import com.lombard.app.Repositorys.Lombard.LoanRepo;
 import com.lombard.app.models.Filial;
+import com.lombard.app.models.Lombard.ItemClasses.UzrunvelyofaInterest;
 import com.lombard.app.models.Lombard.Loan;
 import com.lombard.app.models.Lombard.LoanInterest;
 import com.lombard.app.models.Lombard.LoanPayment;
@@ -35,8 +36,8 @@ public class StaticData {
             activeLoans = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, Loan>>>>>();
     public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanPayment>>>>>
             activePayments = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanPayment>>>>>();
-    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanInterest>>>>>
-            activeInterests = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanInterest>>>>>();
+    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,UzrunvelyofaInterest>>>>>
+            activeInterests = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,UzrunvelyofaInterest>>>>>();
     public static HashMap<Long, HashMap<Long, Loan>> clientsToLoansMap = new HashMap<Long, HashMap<Long, Loan>>();
 
     public static ClientsRepo clientsRepo;
@@ -97,7 +98,7 @@ public class StaticData {
             if (!activeInterests.get(filialId).get(iyear).containsKey(imonth))
                 activeInterests.get(filialId).get(iyear).put(imonth, new HashMap<>());
             if (!activeInterests.get(filialId).get(iyear).get(imonth).containsKey(iday)) {
-                HashMap<Long,LoanInterest> list = new HashMap<Long,LoanInterest>();
+                HashMap<Long,UzrunvelyofaInterest> list = new HashMap<Long,UzrunvelyofaInterest>();
                 activeInterests.get(filialId).get(iyear).get(imonth).put(iday, list);
             }
             if(activeInterests.get(filialId).get(iyear).get(imonth).get(iday).containsKey(loanInterest.getId())) {

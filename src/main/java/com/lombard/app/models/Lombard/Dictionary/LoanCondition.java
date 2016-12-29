@@ -96,11 +96,11 @@ public class LoanCondition {
         this.periodType = periodType;
     }
 
-    public List<Uzrunvelyofa> getLoans() {
+    public List<Uzrunvelyofa> getUzrunvelyofas() {
         return uzrunvelyofas;
     }
 
-    public void setLoans(List<Uzrunvelyofa> uzrunvelyofas) {
+    public void setUzrunvelyofas(List<Uzrunvelyofa> uzrunvelyofas) {
         this.uzrunvelyofas = uzrunvelyofas;
     }
 

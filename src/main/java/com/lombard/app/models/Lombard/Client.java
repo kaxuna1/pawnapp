@@ -148,7 +148,7 @@ public class Client {
         this.number = number;
     }
 
-    public int getLoanNumber(){
+    public Integer getLoanNumber(){
         return StaticData.clientsRepo.getLoansNumber(this);
     }
 

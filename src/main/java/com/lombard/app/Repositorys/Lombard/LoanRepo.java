@@ -71,9 +71,10 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
     Float loansToday(@Param("filial") Filial filial, @Param("from") Date time,@Param("to") Date time2);
 
     @Query("select l from Loan l " +
-            "join l.loanInterests p " +
+            "join l.uzrunvelyofas u " +
+            "join u.uzrunvelyofaInterests p " +
             "where " +
-            "p in (select p from p where p.dueDate<:date) and " +
+            "p in (select p from p where p.dueDate<:date and p.payed=false) and " +
             "l.status = 1 and l.isActive=true")
     List<Loan> findOverdue(@Param("date") Date date);
 

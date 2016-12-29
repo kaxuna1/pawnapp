@@ -5,6 +5,7 @@ import com.lombard.app.StaticData;
 import com.lombard.app.models.Filial;
 import com.lombard.app.models.Lombard.Dictionary.LoanCondition;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
+import com.lombard.app.models.Lombard.ItemClasses.UzrunvelyofaInterest;
 import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
 import com.lombard.app.models.Lombard.TypeEnums.LoanConditionPeryodType;
 import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
@@ -20,6 +21,7 @@ import javax.persistence.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -216,19 +218,11 @@ public class Loan {
     }
 
     public float getLeftSum() {
-        final float[] tempSum = {this.loanSum};
-        payments.forEach(loanPayment -> {
-            if (loanPayment.isActive()) {
-                if (loanPayment.getType() == LoanPaymentType.PARTIAL.getCODE()) {
-                    tempSum[0] -= loanPayment.getSum();
-                }
-            }
-        });
-        return tempSum[0]>=0?tempSum[0]:0;
+        return (float)uzrunvelyofas.stream().mapToDouble(Uzrunvelyofa::getLeftToPay).sum();
     }
 
-    public List<LoanInterest> getLoanInterests() {
-        return loanInterests;
+    public List<UzrunvelyofaInterest> getLoanInterests() {
+        return uzrunvelyofas.stream().flatMap(e->e.getUzrunvelyofaInterests().stream()).sorted((o1, o2) -> o1.getCreateDate().after(o2.getCreateDate())?0:1).collect(Collectors.toList());
     }
 
 
@@ -249,19 +243,7 @@ public class Loan {
     }
 
     public float getInterestSumLeft() {
-        final float[] val = {0};
-        Observable.from(loanInterests).filter(new Func1<LoanInterest, Boolean>() {
-            @Override
-            public Boolean call(LoanInterest loanInterest) {
-                return !loanInterest.isPayed();
-            }
-        }).subscribe(new Action1<LoanInterest>() {
-            @Override
-            public void call(LoanInterest loanInterest) {
-                val[0] += loanInterest.getLeftToPay();
-            }
-        });
-        return val[0];
+         return (float)this.uzrunvelyofas.stream().mapToDouble(Uzrunvelyofa::getInterestsLeftToPay).sum();
     }
 
     public void recalculateInterestPayments() {
@@ -269,7 +251,8 @@ public class Loan {
         uzrunvelyofas.stream().filter(Uzrunvelyofa::isActive).forEach(uzrunvelyofa -> {
             Observable.from(uzrunvelyofa.getUzrunvelyofaInterests()).filter(loanInterest -> !loanInterest.isPayed()).filter(loanInterest -> !loanInterest.isPayed()).subscribe(loanInterest -> {
 
-                Observable.from(payments).filter(loanPayment -> !loanPayment.isUsedFully()).subscribe(loanPayment -> {
+                Observable.from(payments).filter(loanPayment -> !loanPayment.isUsedFully()).filter(lp->lp.getUzrunvelyofa()!=null)
+                        .filter(lp->lp.getUzrunvelyofa().getId()==uzrunvelyofa.getId()).subscribe(loanPayment -> {
                     if (!loanInterest.isPayed()) {
                         if (loanPayment.getLeftForUse() < loanInterest.getLeftToPay()) {
                             loanInterest.addToPayedSum(loanPayment.getLeftForUse());
@@ -307,7 +290,7 @@ public class Loan {
     }
 
     private void checkStatus() {
-       if(getOverdueInterests().size()>0){
+       if(this.isOverDue()){
            this.setStatus(LoanStatusTypes.PAYMENT_LATE.getCODE());
        }else{
            this.setStatus(LoanStatusTypes.ACTIVE.getCODE());
@@ -361,8 +344,11 @@ public class Loan {
     }
 
     public List<String> getConditionName() {
-        return this.uzrunvelyofas.stream().map(uzrunvelyofa -> uzrunvelyofa.getLoanCondition().getFullname()).distinct().collect(Collectors.toList());
+        //todoConditionNames
+        return null;
+        //return this.uzrunvelyofas.stream().map(uzrunvelyofa -> uzrunvelyofa.getLoanCondition().getFullname()).distinct().collect(Collectors.toList());
     }
+
     public long getClientId() {
         return client.getId();
     }
@@ -443,32 +429,6 @@ public class Loan {
         this.closeDate = closeDate;
     }
 
-    public boolean isOverdue() {
-
-        //TODO ახალი ლოგიკა დაგვიანებულის დასადგენად LN3AB9716
-        DateTime dateTime = new DateTime();
-        DateTime dateTime1 = new DateTime();
-        final boolean[] overdue = {false};
-        dateTime.toLocalDateTime().toLocalDate().isAfter(dateTime1.toLocalDateTime().toLocalDate());
-        if (this.closed)
-            return false;
-        Observable.from(loanInterests).filter(loanInterest -> !loanInterest.isPayed() && (new DateTime().toLocalDateTime().toLocalDate().
-                isAfter(new DateTime(loanInterest.getDueDate().getTime()).toLocalDateTime().toLocalDate()))).subscribe(loanInterest -> {
-            overdue[0] = true;
-        });
-
-        return overdue[0];
-    }
-
-    public Date getNextPaymentDate() {
-        Optional<LoanInterest> loanInterestOptional=loanInterests.stream().filter(loanInterest -> !loanInterest.isPayed())
-                .min(Comparator.comparing(LoanInterest::getDueDate));
-        if(loanInterestOptional.isPresent()){
-            return loanInterestOptional.get().getDueDate();
-        }
-        return null;
-    }
-
     public void confiscateAndCloseLoan(){
         LoanMovement loanMovement = new LoanMovement("სესხი დაიხურა ნივთების კონფიკაციით.", MovementTypes.LOAN_CLOSED.getCODE(), this);
         this.movements.add(loanMovement);
@@ -497,19 +457,8 @@ public class Loan {
         return this.uzrunvelyofas.stream().map(Uzrunvelyofa::getType).distinct().sorted().collect(Collectors.toList());
     }
 
-    public List<LoanInterest> getOverdueInterests(){
-        DateTime dateTime=new DateTime();
-        Calendar cal= Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.setTimeZone(TimeZone.getTimeZone("Asia/Tbilisi"));
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return loanInterests.stream()
-                .filter(loanInterest1 -> loanInterest1.isActive())
-                .filter(loanInterest2 -> !loanInterest2.isPayed())
-                .filter(loanInterest3 -> loanInterest3.getDueDate().before(cal.getTime()))
-                .collect(Collectors.toList());
+
+    public boolean isOverDue(){
+        return uzrunvelyofas.stream().filter(Uzrunvelyofa::isOverDue).count()>0;
     }
 }

@@ -80,6 +80,9 @@ public class LoanPaymentController {
         }
     }
 
+
+
+
     @RequestMapping("/filialpayments/{page}")
     @ResponseBody
     public Page<LoanPayment> getFilialPayments(@CookieValue("projectSessionId") long sessionId,
