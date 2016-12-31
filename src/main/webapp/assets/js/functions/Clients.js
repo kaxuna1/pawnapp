@@ -417,6 +417,7 @@ function loadClientUzToDiv(DOMElements, id, page) {
 }
 function loadClientPaymentsToDiv(DOMElements, id, page) {
     $.getJSON("getClientPayments/" + id + "/" + page, function (result) {
+        DOMElements.clientPaymentDataTableBody.html("");
         var dataArray = result["content"];
         var totalPages = result["totalPages"];
         var totalElements = result["totalElements"];

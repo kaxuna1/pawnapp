@@ -163,7 +163,7 @@ public class Client {
     public HashMap<Long, Loan> myMap(){
         if(!StaticData.clientsToLoansMap.containsKey(this.id)) {
             HashMap<Long,Loan> clientLoansHashmap=new HashMap<>();
-            this.loans.stream().forEach(loan -> clientLoansHashmap.put(loan.getId(),loan));
+            this.loans.stream().filter(Loan::isActive).forEach(loan -> clientLoansHashmap.put(loan.getId(),loan));
             StaticData.clientsToLoansMap.put(this.id,clientLoansHashmap);
         }
         return StaticData.clientsToLoansMap.get(this.id);

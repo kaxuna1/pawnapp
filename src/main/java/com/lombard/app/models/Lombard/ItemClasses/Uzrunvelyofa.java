@@ -98,7 +98,6 @@ public class Uzrunvelyofa {
 
     @ManyToOne
     @JoinColumn(name = "loanConditionId")
-    @JsonIgnore
     private LoanCondition loanCondition;
 
 

@@ -72,9 +72,9 @@ public class ScheduledTasks {
             StaticData.loanPaymentRepo = this.loanPaymentRepo;
             staticReposReady = true;
             runOnce = false;
-            //filialRepository.findAll().stream().filter(Filial::isActive)
-              //      .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
-                //            .stream().forEach(StaticData::mapLoan));
+            filialRepository.findAll().stream().filter(Filial::isActive)
+                   .forEach(filial -> loanRepo.findByFilialAndIsActiveOrderByCreateDate(filial, true)
+                           .stream().forEach(StaticData::mapLoan));
             log.info("initFinish");
         }
     }

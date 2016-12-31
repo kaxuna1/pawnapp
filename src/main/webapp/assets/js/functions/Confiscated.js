@@ -92,6 +92,14 @@ function loadConfiscatedData(index, search, noAnimation) {
         dynamicFilters.gpu.par.hide();
         dynamicFilters.mass.par.hide();
         dynamicFilters.hdd.par.hide();
+        dynamicFilters.brand.val("0");
+        dynamicFilters.model.val("");
+        dynamicFilters.name.val("");
+        dynamicFilters.sinji.val("0");
+        dynamicFilters.cpu.val("");
+        dynamicFilters.gpu.val("");
+        dynamicFilters.mass.val("");
+        dynamicFilters.hdd.val("");
         if($(this).val()==="3"){
             dynamicFilters.sinji.par.show();
             dynamicFilters.name.par.show();
@@ -273,7 +281,9 @@ function loadConfiscatedData(index, search, noAnimation) {
             $(".paginate_button").click(function () {
                 //console.log($(this).val())
                 currentPage = $(this).val();
-                loadConfiscatedData(currentPage, search)
+                index=currentPage;
+                dataLoading();
+
 
             });
 

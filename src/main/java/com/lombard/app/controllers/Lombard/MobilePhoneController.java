@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -196,7 +197,7 @@ public class MobilePhoneController {
 
         Specifications<Uzrunvelyofa> specifications = where(filialSpec(session.getUser().getFilial()));
         specifications = specifications.and(active());
-
+        specifications = specifications.and(activeLoan());
         if (brand != 0) {
             List<Long> brands = new ArrayList<>();
             brands.add(brand);
@@ -254,8 +255,7 @@ public class MobilePhoneController {
             statuses.add(UzrunvelyofaStatusTypes.GATAVISUFLEBULI.getCODE());
         }
         specifications = specifications.and(UzrunvelyofaSpecifications.statuses(statuses));
-
-
+       
         return uzrunvelyofaRepo.findAll(specifications, constructPageSpecification(index));
 
         /*query.where(predicates.toArray(new Predicate[predicates.size()]));

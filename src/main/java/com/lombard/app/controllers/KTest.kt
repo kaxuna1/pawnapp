@@ -1,5 +1,6 @@
 package com.lombard.app.controllers
 
+import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.lombard.app.Repositorys.Lombard.*
 import com.lombard.app.Repositorys.SessionRepository
@@ -9,12 +10,17 @@ import com.lombard.app.StaticData.*
 import com.lombard.app.models.Enum.JsonReturnCodes
 import com.lombard.app.models.Enum.ReportPeriodType
 import com.lombard.app.models.Enum.ReportType
+import com.lombard.app.models.Enum.UserType
 import com.lombard.app.models.JsonMessage
 import com.lombard.app.models.Lombard.Dictionary.Brand
+import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa
 import com.lombard.app.models.Lombard.Loan
+import com.lombard.app.models.Lombard.MovementModels.LoanMovement
 import com.lombard.app.models.Lombard.MovementModels.UzrunvelyofaMovement
 import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes
+import com.lombard.app.models.Lombard.TypeEnums.MovementTypes
 import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaStatusTypes
+import com.lombard.app.models.Lombard.TypeEnums.UzrunvelyofaTypes
 import com.lombard.app.models.UserManagement.Session
 import com.lombard.app.scheduledtasks.ScheduledTasks
 import org.joda.time.DateTime
@@ -26,6 +32,7 @@ import org.springframework.web.bind.annotation.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
+import java.util.function.Consumer
 
 /**
  * Created by kaxa on 12/3/16.
@@ -40,7 +47,10 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
                            val interestsRepo: LoanInterestRepo,
                            val paymentRepo: LoanPaymentRepo,
                            val uzrunvelyofaRepo: UzrunvelyofaRepo,
-                           val clientsRepo: ClientsRepo) {
+                           val clientsRepo: ClientsRepo,
+                           val loanConditionsRepo: LoanConditionsRepo,
+                           val loanMovementsRepo: LoanMovementsRepo,
+                           val sinjiRepo:SinjiRepo) {
 
     private val log = LoggerFactory.getLogger(LoanControllerKotlin::class.java)
 
@@ -455,6 +465,7 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
 
                     uz.payInt(uz.interestsLeftToPay)
                     uz.paySum(uz.leftToPay)
+                    uz.free()
                 }
                 loan.recalculateInterestPayments()
 
@@ -480,5 +491,165 @@ class LoanControllerKotlin(val brandRepo: BrandRepo,
         return PageRequest(pageIndex, size)
     }
 
+
+    @RequestMapping("/createloan")
+
+    fun createLoan(@CookieValue("projectSessionId") sessionId: Long,
+                   @RequestParam(value = "json") jsonString: String): Any {
+
+
+        val session = sessionRepo.findOne(sessionId)
+
+        if (session.isIsactive and (session.user.type == UserType.lombardOperator.code)) {
+
+            try {
+                var uzrunvelyofas: MutableList<Uzrunvelyofa> = ArrayList()
+                var loanSum = 0f
+
+
+                val jsonParser = JsonParser()
+                val gson = Gson()
+
+
+                val mainObject = jsonParser.parse(jsonString).asJsonObject
+                val clientObject = mainObject.getAsJsonObject("client")
+
+                val mobiles = mainObject.getAsJsonArray("mobiles")
+                val laptopsJson = mainObject.getAsJsonArray("laptops")
+                val goldJson = mainObject.getAsJsonArray("gold")
+                val homeTechJson = mainObject.getAsJsonArray("homeTech")
+                val otherJson = mainObject.getAsJsonArray("other")
+
+
+                val clientId = clientObject.get("id").asLong
+
+
+                for (i in 0..mobiles.size() - 1) {
+                    val mobile = mobiles.get(i).asJsonObject
+                    val mobilePhoneTemp = Uzrunvelyofa()
+
+                    mobilePhoneTemp.sum = mobile.get("sum").asFloat
+                    mobilePhoneTemp.isActive = true
+                    mobilePhoneTemp.comment = mobile.get("comment").asString
+                    mobilePhoneTemp.imei = mobile.get("imei").asString
+                    mobilePhoneTemp.loan = null
+                    mobilePhoneTemp.isOnFirstInterest = true
+                    mobilePhoneTemp.type = UzrunvelyofaTypes.MOBILE.code
+                    mobilePhoneTemp.model = mobile.get("model").asString
+                    mobilePhoneTemp.brand = brandRepo.findOne(mobile.get("brand").asLong)
+                    mobilePhoneTemp.status = UzrunvelyofaStatusTypes.DATVIRTULI.code
+                    mobilePhoneTemp.loanCondition = loanConditionsRepo.findOne(mobile.get("condition").asLong)
+
+                    uzrunvelyofas.add(mobilePhoneTemp)
+                    loanSum += mobile.get("sum").asFloat
+                }
+                for (i in 0..laptopsJson.size() - 1) {
+                    val laptop = laptopsJson.get(i).asJsonObject
+                    val laptopTemp = Uzrunvelyofa()
+
+                    laptopTemp.isActive = true
+                    laptopTemp.brand = brandRepo.findOne(laptop.get("brand").asLong)
+                    laptopTemp.model = laptop.get("model").asString
+                    laptopTemp.cpu = laptop.get("cpu").asString
+                    laptopTemp.gpu = laptop.get("gpu").asString
+                    laptopTemp.ram = laptop.get("ram").asString
+                    laptopTemp.hdd = laptop.get("hdd").asFloat
+                    laptopTemp.type = UzrunvelyofaTypes.LAPTOP.code
+                    laptopTemp.status = UzrunvelyofaStatusTypes.DATVIRTULI.code
+                    laptopTemp.sum = laptop.get("sum").asFloat
+                    laptopTemp.isOnFirstInterest = true
+                    laptopTemp.loanCondition = loanConditionsRepo.findOne(laptop.get("condition").asLong)
+                    laptopTemp.comment = laptop.get("comment").asString
+
+                    loanSum += laptop.get("sum").asFloat
+                    uzrunvelyofas.add(laptopTemp)
+                }
+                for (i in 0..goldJson.size() - 1) {
+                    val gold = goldJson.get(i).asJsonObject
+                    val goldTemp = Uzrunvelyofa()
+
+                    goldTemp.isActive = true
+                    goldTemp.type = UzrunvelyofaTypes.GOLD.code
+                    goldTemp.status = UzrunvelyofaStatusTypes.DATVIRTULI.code
+                    goldTemp.name = gold.get("name").asString
+                    goldTemp.sinji = sinjiRepo.findOne(gold.get("sinji").asLong)
+                    goldTemp.mass = gold.get("mass").asFloat
+                    goldTemp.sum = gold.get("sum").asFloat
+                    goldTemp.isOnFirstInterest = true
+                    goldTemp.comment = gold.get("comment").asString
+                    goldTemp.loanCondition = loanConditionsRepo.findOne(gold.get("condition").asLong)
+
+                    loanSum += gold.get("sum").asFloat
+                    uzrunvelyofas.add(goldTemp)
+                }
+                for (i in 0..otherJson.size() - 1) {
+                    val other = otherJson.get(i).asJsonObject
+                    val otherTemp = Uzrunvelyofa()
+
+                    otherTemp.isActive = true
+                    otherTemp.brand = brandRepo.findOne(other.get("brand").asLong)
+                    otherTemp.model = other.get("model").asString
+                    otherTemp.type = UzrunvelyofaTypes.OTHER.code
+                    otherTemp.status = UzrunvelyofaStatusTypes.DATVIRTULI.code
+                    otherTemp.sum = other.get("sum").asFloat
+                    otherTemp.isOnFirstInterest = true
+                    otherTemp.comment = other.get("comment").asString
+                    otherTemp.loanCondition = loanConditionsRepo.findOne(other.get("condition").asLong)
+
+                    loanSum += other.get("sum").asFloat
+                    uzrunvelyofas.add(otherTemp)
+                }
+                for (i in 0..homeTechJson.size() - 1) {
+                    val other = homeTechJson.get(i).asJsonObject
+                    val homeTechTemp = Uzrunvelyofa()
+
+                    homeTechTemp.isActive = true
+                    homeTechTemp.brand = brandRepo.findOne(other.get("brand").asLong)
+                    homeTechTemp.model = other.get("model").asString
+                    homeTechTemp.name = other.get("name").asString
+                    homeTechTemp.type = UzrunvelyofaTypes.HOMETECH.code
+                    homeTechTemp.status = UzrunvelyofaStatusTypes.DATVIRTULI.code
+                    homeTechTemp.sum = other.get("sum").asFloat
+                    homeTechTemp.isOnFirstInterest = true
+                    homeTechTemp.comment = other.get("comment").asString
+                    homeTechTemp.loanCondition = loanConditionsRepo.findOne(other.get("condition").asLong)
+
+                    loanSum += other.get("sum").asFloat
+                    uzrunvelyofas.add(homeTechTemp)
+                }
+
+
+                var loan = Loan(clientsRepo.findOne(clientId),
+                        session.user.filial, loanSum, session.user)
+                //loan.setLoanCondition(loanConditionsRepo.findOne(conditionId));
+                loan.status = LoanStatusTypes.ACTIVE.code
+                loan = loanRepo.save(loan)
+                val id = loan.id
+                val year = DateTime().year - 2000
+                loan.number = "LN" + StaticData.hashids.encode(id) + year
+                val finalLoan = loan
+                uzrunvelyofas.forEach { uzrunvelyofa -> uzrunvelyofa.loan = finalLoan }
+                uzrunvelyofas.forEach{it.initLists() }
+                uzrunvelyofas = uzrunvelyofaRepo.save(uzrunvelyofas)
+                uzrunvelyofas.forEach { uzrunvelyofa -> uzrunvelyofa.number = "LP" + StaticData.hashids.encode(uzrunvelyofa.id + year) }
+                uzrunvelyofas = uzrunvelyofaRepo.save(uzrunvelyofas)
+                val loanMovement = LoanMovement("სესხი დარეგისტრირდა", MovementTypes.REGISTERED.code, loan)
+                loanMovementsRepo.save(loanMovement)
+                loan.uzrunvelyofas = uzrunvelyofas
+                loan.addFirstInterest()
+                loanRepo.save(loan)
+                StaticData.mapLoan(loan)
+                return mapOf(
+                        "code" to JsonReturnCodes.Ok.code,
+                        "obj" to loan)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return JsonMessage(JsonReturnCodes.ERROR.code, e.message)
+            }
+
+        } else {
+            return JsonMessage(JsonReturnCodes.DONTHAVEPERMISSION.code, "permission problem")
+        }
+    }
 
 }

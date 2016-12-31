@@ -91,7 +91,7 @@ function loadLoansData(index, search, noAnimation) {
                     moment(new Date(currentElement["createDate"])).locale("ka").format("L") + "</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRow'>" +
                     '<i class="fa fa-calendar" aria-hidden="true"></i>' +
-                    (currentElement.closed ? moment(new Date(currentElement["closeDate"])).locale("ka").format("L")
+                    (currentElement.closed ? "დახურულია"
                         : moment(new Date(currentElement["nextPaymentDate"])).locale("ka").format("L")) + "</td>" +
                     "<td><a value='" + currentElement['id'] + "' class='loanActionButton' href='#'> " +
                     "<i class='fa fa-bars' aria-hidden='true'></i></a></td>" +
@@ -602,7 +602,8 @@ function updateSideInfo(DOMElements) {
                 if (msg) {
                     if (msg.code === 0) {
                         DOMElements.modal.modal("hide")
-                        loadLoansData(0, "")
+                        //loadClientsData(0, "")
+                        openLoanGlobal(msg.obj)
                     }
                 } else {
 
@@ -656,9 +657,6 @@ function loadLoanInfoData(DOMElements) {
     DOMElements.loanInfoDiv.append("<div>სესხის დასახურად გადასახდელი თანხა: <strong style='font-family: font1'>" + DOMElements.currentObj.sumForLoanClose + " ლარი</strong></div>");
     DOMElements.loanInfoDiv.append("<div>საპროცენტო განაქვეთი: <strong style='font-family: font1'>" + DOMElements.currentObj.conditionName + "</strong></div>");
     if (!DOMElements.currentObj.closed) {
-        DOMElements.loanInfoDiv.append("<div>მომდევნო %-ის დარიცხვის თარიღი: <strong style='font-family: font1'>" +
-            moment(new Date(DOMElements.currentObj.nextInterestCalculationDate)).locale("ka").format("L") + "</strong></div>");
-
         //TODO გადასაწერია პროცენტის ცვენების ლოგიკა ყოველი ცალკეული უზრუნველყოფისთვის!
         /*DOMElements.loanInfoDiv.append("<div>დაერირცხება: <strong style='font-family: font1'>" + DOMElements.currentObj.loanCondition.percent + "% ყოველ " +
          DOMElements.currentObj.loanCondition.period + " " + periodTypes[DOMElements.currentObj.loanCondition.periodType] +
@@ -683,8 +681,8 @@ function loadUzrunvelyofaDataForLoan(DOMElements) {
 }
 
 function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
-    DOMElements.uzrunvelyofaDataGridDiv.html(clientProfileUzrunvelyofasTemplate);
-    DOMElements.uzrunvelyofaContainerDiv = $("#clientUzrunvelyofaDataTableBody");
+    DOMElements.uzrunvelyofaDataGridDiv.html(UzrunvelyofasTemplate);
+    DOMElements.uzrunvelyofaContainerDiv = $("#UzrunvelyofaDataTableBody");
     var dataArray = DOMElements.currentObj.uzrunvelyofa;
     for (var i = 0; i < dataArray.length; i++) {
         var currentElement = dataArray[i];
@@ -741,12 +739,13 @@ function drawUzrunvelyofaGridForLoanInfo(DOMElements) {
         currentElement.clientSideName = name;
 
         /** @namespace currentElement.overDue */
-        DOMElements.uzrunvelyofaContainerDiv.append("<tr class='" + (currentElement.overDue ? "danger" : "") + "'>" +
-            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + type + " " + name + "</td>" +
+        DOMElements.uzrunvelyofaContainerDiv.append("<tr style='font-weight: bolder;' class='" + (currentElement.overDue ? "danger" : "") + "'>" +
+            "<td style='font-family: font1; font-weight: 200' value='" + i + "' class='gridRowLoanUz'>" + type + " " + name + "</td>" +
             "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["number"] + "</td>" +
-            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + currentElement["sum"] + "ლ.</strong></td>" +
-            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + currentElement["leftToPay"] + "ლ.</strong></td>" +
-            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + currentElement["interestsLeftToPay"] + "ლ.</strong></td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["sum"] + "ლ.</td>" +
+            "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["leftToPay"] + "ლ.</td>" +
+            "<td style='font-family: font1;text-align: center;' value='" + i + "' class='gridRowLoanUz'>" + currentElement["interestsLeftToPay"] + "ლ.</td>" +
+            "<td style='text-align:center;font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + currentElement.loanCondition.percent + "%.</td>" +
             "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + loanStatuses[currentElement["status"]]
             + (currentElement.overDue ? " <strong style='font-size: 15px'>(დაგ. " + currentElement.overDueInterestSum + " ლ.)</strong>" : "") + "</td>" +
             "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>" + buttons + "</td>" +
@@ -1022,6 +1021,12 @@ function loadLoanDoActions(DOMElements) {
                     "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'>ჯამი:</td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + sumDziri + "ლ.</strong></td>" +
                     "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + sumInterest + "ლ.</strong></td>" +
+                    "</tr>")
+                tableBody.append("<tr>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'></td>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'></td>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>სულ: </strong></td>" +
+                    "<td style='font-family: font1;' value='" + i + "' class='gridRowLoanUz'><strong style='font-size: 18px'>" + (sumInterest+sumDziri) + "ლ.</strong></td>" +
                     "</tr>")
 
 

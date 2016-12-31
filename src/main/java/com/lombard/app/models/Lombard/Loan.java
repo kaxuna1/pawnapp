@@ -7,10 +7,7 @@ import com.lombard.app.models.Lombard.Dictionary.LoanCondition;
 import com.lombard.app.models.Lombard.ItemClasses.Uzrunvelyofa;
 import com.lombard.app.models.Lombard.ItemClasses.UzrunvelyofaInterest;
 import com.lombard.app.models.Lombard.MovementModels.LoanMovement;
-import com.lombard.app.models.Lombard.TypeEnums.LoanConditionPeryodType;
-import com.lombard.app.models.Lombard.TypeEnums.LoanPaymentType;
-import com.lombard.app.models.Lombard.TypeEnums.LoanStatusTypes;
-import com.lombard.app.models.Lombard.TypeEnums.MovementTypes;
+import com.lombard.app.models.Lombard.TypeEnums.*;
 import com.lombard.app.models.UserManagement.User;
 import org.joda.time.DateTime;
 import rx.Observable;
@@ -221,8 +218,17 @@ public class Loan {
         return (float)uzrunvelyofas.stream().mapToDouble(Uzrunvelyofa::getLeftToPay).sum();
     }
 
+    @JsonIgnore
     public List<UzrunvelyofaInterest> getLoanInterests() {
-        return uzrunvelyofas.stream().flatMap(e->e.getUzrunvelyofaInterests().stream()).sorted((o1, o2) -> o1.getCreateDate().after(o2.getCreateDate())?0:1).collect(Collectors.toList());
+
+        List<UzrunvelyofaInterest> list= uzrunvelyofas.stream()
+                .flatMap(e->e.getUzrunvelyofaInterests().stream())
+                .collect(Collectors.toList())
+                .stream()
+                .collect(Collectors.toList());
+        list.sort((p1,p2)->p1.getCreateDate().after(p2.getCreateDate())?1:0);
+
+        return list;
     }
 
 
@@ -290,9 +296,10 @@ public class Loan {
     }
 
     private void checkStatus() {
-       if(this.isOverDue()){
+       if(this.isOverDue()&&!isClosed()){
            this.setStatus(LoanStatusTypes.PAYMENT_LATE.getCODE());
        }else{
+           if(!isClosed())
            this.setStatus(LoanStatusTypes.ACTIVE.getCODE());
        }
     }
@@ -460,5 +467,14 @@ public class Loan {
 
     public boolean isOverDue(){
         return uzrunvelyofas.stream().filter(Uzrunvelyofa::isOverDue).count()>0;
+    }
+    public Date getNextPaymentDate(){
+        Optional<UzrunvelyofaInterest> interest=uzrunvelyofas.stream()
+                .filter(uzrunvelyofa -> uzrunvelyofa.getStatus()== UzrunvelyofaStatusTypes.DATVIRTULI.getCODE())
+                .flatMap(e->e.getUzrunvelyofaInterests().stream())
+                .collect(Collectors.toList()).stream().sorted((o1, o2) -> o1.getCreateDate().after(o2.getCreateDate())?1:0).findFirst();
+        if(interest.isPresent())
+        return interest.get().getDueDate();
+        else return null;
     }
 }

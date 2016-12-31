@@ -51,7 +51,7 @@ public interface ClientsRepo extends JpaRepository<Client, Long> {
 
     List<Client> findByPersonalNumberAndFilial(@Param("personalNumber") String personalNumber, @Param("filial") Filial filial);
 
-    @Query("select count(l) from Loan l where l.client=:client")
+    @Query("select count(l) from Loan l where l.client=:client and l.isActive=true")
     int getLoansNumber(@Param("client") Client client);
 }
 

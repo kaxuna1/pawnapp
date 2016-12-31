@@ -448,7 +448,8 @@ $(document).ready(function () {
                 '<div class="col-md-5">        ' +
                 '<input style="width: 40%;height: 30px" type="date" class="form-control" placeholder="დან" id="lstd">        ' +
                 '<input style="width: 40%;height: 30px" type="date" class="form-control" placeholder="დან" id="lend">      ' +
-                '<button id="updateButton" style=";"><i style="padding-right: 0px;" class="fa fa-bars" aria-hidden="true"></i></button>' +
+                '<button id="updateButton" style=";"><i style="padding-right: 0px;" class="fa fa-search" aria-hidden="true"></i></button>' +
+                '<button style="margin-left: 10px;" id="exportLoans" style=";"><i style="padding-right: 0px;" class="fa fa-file-excel-o" aria-hidden="true"></i></button>' +
                 '</div></div>');
             $('input').iCheck({
                 checkboxClass: 'icheckbox_minimal',

@@ -166,6 +166,7 @@ public class LoanController {
             if (!late) {
                 statuses.add(LoanStatusTypes.ACTIVE.getCODE());
                 statuses.add(LoanStatusTypes.CLOSED_WITH_SUCCESS.getCODE());
+                statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
             } else {
                 statuses.add(LoanStatusTypes.PAYMENT_LATE.getCODE());
                 statuses.add(LoanStatusTypes.CLOSED_WITH_CONFISCATION.getCODE());
@@ -239,7 +240,7 @@ public class LoanController {
                 findByClientAndIsActiveAndStatusInOrderByNextInterestCalculationDateAsc(clientsRepo.getOne(id), true, statuses, constructPageSpecification(page, 10));
     }
 
-    @RequestMapping("/createloan")
+/*    @RequestMapping("/createloan")
     @ResponseBody
     @Transactional
     public JsonMessage createLoan(@CookieValue("projectSessionId") long sessionId,
@@ -396,7 +397,7 @@ public class LoanController {
         } else {
             return new JsonMessage(JsonReturnCodes.DONTHAVEPERMISSION.getCODE(), "permission problem");
         }
-    }
+    }*/
 
     @RequestMapping("/p")
     @ResponseBody

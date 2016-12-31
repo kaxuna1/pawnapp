@@ -39,8 +39,18 @@ public class UzrunvelyofaSpecifications {
     }
 
     public static Specification<Uzrunvelyofa> active() {
-        return (root, query, cb) -> cb.equal(root.get(Uzrunvelyofa_.active), true);
+        return (root, query, cb) -> {
+            query.orderBy(cb.desc(root.get(Uzrunvelyofa_.id)));
+            return cb.equal(root.get(Uzrunvelyofa_.active), true);
+        };
     }
+    public static Specification<Uzrunvelyofa> activeLoan() {
+        return (root, query, cb) -> {
+            Join<Uzrunvelyofa, Loan> loan = root.join(Uzrunvelyofa_.loan, JoinType.LEFT);
+            return cb.equal(loan.get(Loan_.isActive), true);
+        };
+    }
+
 
     public static Specification<Uzrunvelyofa> sinjiSpec(List<Sinji> sinjis) {
         return ((root, query, cb) -> root.get(Uzrunvelyofa_.sinji).in(sinjis));
