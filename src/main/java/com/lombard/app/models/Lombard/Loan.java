@@ -477,4 +477,12 @@ public class Loan {
         return interest.get().getDueDate();
         else return null;
     }
+
+    public double getInterestAddedSum() {
+        return uzrunvelyofas.stream().flatMap(e->e.getUzrunvelyofaInterests().stream()).mapToDouble(UzrunvelyofaInterest::getSum).sum();
+    }
+
+    public double getPayementsMadeSum() {
+        return payments.stream().mapToDouble(LoanPayment::getSum).sum();
+    }
 }

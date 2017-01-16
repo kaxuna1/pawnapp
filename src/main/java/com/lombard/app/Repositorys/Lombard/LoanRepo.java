@@ -29,6 +29,13 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
             "order by l.createDate desc")
     Page<Loan> findMyFilialLoans(@Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
                                  @Param("start") Date start,@Param("end") Date end, Pageable pageable);
+    @Query(value = "select l from Loan l join l.filial f where f=:filial " +
+            "and l.status in (:statuses) " +
+            "and l.isActive=true " +
+            "and l.createDate between :start and :end " +
+            "order by l.createDate desc")
+    List<Loan> findMyFilialLoansList(@Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
+                                 @Param("start") Date start,@Param("end") Date end);
 
     @Query(value = "select l from Loan l " +
             "join l.filial f " +
@@ -45,6 +52,21 @@ public interface LoanRepo extends JpaRepository<Loan,Long> {
     Page<Loan> findMyFilialLoansWithSearch(@Param("search") String search,
                                            @Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
                                            @Param("start") Date start,@Param("end") Date end, Pageable pageable);
+    @Query(value = "select l from Loan l " +
+            "join l.filial f " +
+            "join l.client c " +
+            "join l.uzrunvelyofas u " +
+            "where f=:filial " +
+            "and (l.createDate between :start and :end)" +
+            "and l.isActive=true " +
+            "and (l.status in (:statuses)) " +
+            "and ( l.number  LIKE CONCAT('%',:search,'%') " +
+            "or c.personalNumber LIKE CONCAT('%',:search,'%') " +
+            "or u in (select u from u where u.number like CONCAT('%',:search,'%') )) " +
+            "order by l.createDate desc")
+    List<Loan> findMyFilialLoansWithSearchList(@Param("search") String search,
+                                           @Param("filial") Filial filial, @Param("statuses") List<Integer> statuses,
+                                           @Param("start") Date start,@Param("end") Date end);
 
 
     @Query(value = "select l from Loan l join l.client c where c.id=:id order by l.createDate desc")

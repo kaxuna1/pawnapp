@@ -9,7 +9,9 @@ var sendLoanData = {};
 var brands = {};
 var laptopBrands = {};
 var sinjebi = {};
-var homeTechBrands = {};
+var homeTechBrands = {
+
+};
 var conditions = {};
 var indexG = 0;
 var searchG = "";
@@ -133,6 +135,22 @@ function loadLoansData(index, search, noAnimation) {
         })
     }
 
+}
+function exportLoansData(search) {
+    var ifrm = document.getElementById("frame1");
+    ifrm.src =
+    "loansReport?"+
+    "closed=" +
+    ($("#closedParam").is(":checked") ? "true" : "false") +
+    "&opened=" +
+    ($("#openedParam").is(":checked") ? "true" : "false") +
+    "&late=" +
+    ($("#lateParam").is(":checked") ? "true" : "false") +
+    "&start=" +
+    moment($("#lstd").val()) +
+    "&end=" +
+    moment($("#lend").val()) +
+    "&search=" + search;
 }
 
 function drawClientChooser(DOMElements) {

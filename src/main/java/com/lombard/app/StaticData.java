@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,23 +29,22 @@ import java.util.stream.Collectors;
  */
 @Transactional
 public class StaticData {
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/mm/yyyy");
     public static HashMap<Long, SseEmitter> emitterHashMap = new HashMap<>();
     public static Hashids hashids = new Hashids("this is my salt", 5, "0123456789ABCDEF");
     public static HashMap<Long, HashMap<Long, HashMap<Long, Float>>> reportData = new HashMap<>();
     public static final Logger log = LoggerFactory.getLogger(StaticData.class);
     public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, Loan>>>>>
             activeLoans = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, Loan>>>>>();
-    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanPayment>>>>>
-            activePayments = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,LoanPayment>>>>>();
-    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,UzrunvelyofaInterest>>>>>
-            activeInterests = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long,UzrunvelyofaInterest>>>>>();
+    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, LoanPayment>>>>>
+            activePayments = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, LoanPayment>>>>>();
+    public static HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, UzrunvelyofaInterest>>>>>
+            activeInterests = new HashMap<Long, HashMap<Integer, HashMap<Integer, HashMap<Integer, HashMap<Long, UzrunvelyofaInterest>>>>>();
     public static HashMap<Long, HashMap<Long, Loan>> clientsToLoansMap = new HashMap<Long, HashMap<Long, Loan>>();
-
     public static ClientsRepo clientsRepo;
     public static LoanRepo loanRepo;
     public static LoanPaymentRepo loanPaymentRepo;
     public static LoanInterestRepo loanInterestRepo;
-
     public synchronized static void mapLoan(Loan loan) {
         DateTime dateTime = new DateTime(loan.getCreateDate().getTime());
         long filialId = loan.getFilial().getId();
@@ -77,13 +77,13 @@ public class StaticData {
             if (!activePayments.get(filialId).get(pyear).containsKey(pmonth))
                 activePayments.get(filialId).get(pyear).put(pmonth, new HashMap<>());
             if (!activePayments.get(filialId).get(pyear).get(pmonth).containsKey(pday)) {
-                HashMap<Long,LoanPayment> list = new HashMap<Long, LoanPayment>();
+                HashMap<Long, LoanPayment> list = new HashMap<Long, LoanPayment>();
                 activePayments.get(filialId).get(pyear).get(pmonth).put(pday, list);
             }
-            if(activePayments.get(filialId).get(pyear).get(pmonth).get(pday).containsKey(loanPayment.getId())) {
-                activePayments.get(filialId).get(pyear).get(pmonth).get(pday).replace(loanPayment.getId(),loanPayment);
-            }else{
-                activePayments.get(filialId).get(pyear).get(pmonth).get(pday).put(loanPayment.getId(),loanPayment);
+            if (activePayments.get(filialId).get(pyear).get(pmonth).get(pday).containsKey(loanPayment.getId())) {
+                activePayments.get(filialId).get(pyear).get(pmonth).get(pday).replace(loanPayment.getId(), loanPayment);
+            } else {
+                activePayments.get(filialId).get(pyear).get(pmonth).get(pday).put(loanPayment.getId(), loanPayment);
             }
         });
         loan.getLoanInterests().forEach(loanInterest -> {
@@ -98,13 +98,13 @@ public class StaticData {
             if (!activeInterests.get(filialId).get(iyear).containsKey(imonth))
                 activeInterests.get(filialId).get(iyear).put(imonth, new HashMap<>());
             if (!activeInterests.get(filialId).get(iyear).get(imonth).containsKey(iday)) {
-                HashMap<Long,UzrunvelyofaInterest> list = new HashMap<Long,UzrunvelyofaInterest>();
+                HashMap<Long, UzrunvelyofaInterest> list = new HashMap<Long, UzrunvelyofaInterest>();
                 activeInterests.get(filialId).get(iyear).get(imonth).put(iday, list);
             }
-            if(activeInterests.get(filialId).get(iyear).get(imonth).get(iday).containsKey(loanInterest.getId())) {
-                activeInterests.get(filialId).get(iyear).get(imonth).get(iday).replace(loanInterest.getId(),loanInterest);
-            }else{
-                activeInterests.get(filialId).get(iyear).get(imonth).get(iday).put(loanInterest.getId(),loanInterest);
+            if (activeInterests.get(filialId).get(iyear).get(imonth).get(iday).containsKey(loanInterest.getId())) {
+                activeInterests.get(filialId).get(iyear).get(imonth).get(iday).replace(loanInterest.getId(), loanInterest);
+            } else {
+                activeInterests.get(filialId).get(iyear).get(imonth).get(iday).put(loanInterest.getId(), loanInterest);
             }
         });
         if (clientsToLoansMap.containsKey(loan.getClientId())) {
@@ -115,26 +115,24 @@ public class StaticData {
         }
         if (activeLoans.get(filialId).get(year).get(month).get(day).containsKey(loan.getId())) {
             activeLoans.get(filialId).get(year).get(month).get(day).replace(loan.getId(), loan);
-        }else{
+        } else {
             activeLoans.get(filialId).get(year).get(month).get(day).put(loan.getId(), loan);
         }
     }
-
-    public static List<Loan> getLoansByMonthFromHash(Date date, Filial filial){
-        List<Loan> loans=new ArrayList<>();
-        DateTime dateTime=new DateTime(date.getTime());
-        int thisMonth=dateTime.getMonthOfYear();
-        dateTime=dateTime.withDayOfMonth(1);
-        while (dateTime.getMonthOfYear()==thisMonth){
-            loans.addAll(getloansByDayFromHash(dateTime.toDate(),filial));
-            dateTime=dateTime.plusDays(1);
+    public static List<Loan> getLoansByMonthFromHash(Date date, Filial filial) {
+        List<Loan> loans = new ArrayList<>();
+        DateTime dateTime = new DateTime(date.getTime());
+        int thisMonth = dateTime.getMonthOfYear();
+        dateTime = dateTime.withDayOfMonth(1);
+        while (dateTime.getMonthOfYear() == thisMonth) {
+            loans.addAll(getloansByDayFromHash(dateTime.toDate(), filial));
+            dateTime = dateTime.plusDays(1);
         }
 
         return loans;
     }
-
-    public static List<Loan> getloansByDayFromHash(Date date,Filial filial){
-        List<Loan> loans=new ArrayList<>();
+    public static List<Loan> getloansByDayFromHash(Date date, Filial filial) {
+        List<Loan> loans = new ArrayList<>();
         DateTime dateTime = new DateTime(date);
         long filialId = filial.getId();
         int year = dateTime.getYear();

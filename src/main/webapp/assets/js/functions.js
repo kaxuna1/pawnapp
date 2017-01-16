@@ -466,6 +466,9 @@ $(document).ready(function () {
             $("#updateButton").click(function () {
                 loadLoansData(0, $("#searchText").val());
             })
+            $("#exportLoans").click(function () {
+                exportLoansData($("#searchText").val());
+            })
             loadLoansData(0, "");
             currentFunction = loadLoansData;
 
